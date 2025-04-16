@@ -8,7 +8,9 @@
     "start": "next start",
     "lint": "next lint",
     "db_generate": "npx drizzle-kit generate",
-    "db_migrate": "npx drizzle-kit migrate"
+    "db_migrate": "npx drizzle-kit migrate",
+    "tests": "npx playwright test",
+    "tests_ui_mode": "npx playwright test --ui"
   },
   "dependencies": {
     "dotenv": "^16.5.0",
@@ -20,6 +22,7 @@
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3",
+    "@playwright/test": "^1.51.1",
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",
