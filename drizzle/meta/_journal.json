@@ -8,6 +8,13 @@
       "when": 1744727062987,
       "tag": "0000_polite_norman_osborn",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1745235006524,
+      "tag": "0001_parched_james_howlett",
+      "breakpoints": true
     }
   ]
 }

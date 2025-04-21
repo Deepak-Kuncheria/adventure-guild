@@ -85,9 +85,21 @@ export const notices = pgTable("notices", {
   createdAt: timestamp("created_at").defaultNow(),
 });
 
+// Refresh token table
+export const refreshTokens = pgTable("refresh_tokens", {
+  id: uuid("id").defaultRandom().primaryKey(),
+  userId: uuid("user_id")
+    .notNull()
+    .references(() => users.id),
+  token: text("token").notNull(),
+  expiresAt: timestamp("expires_at").notNull(),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
 // Users relations
 export const usersRelations = relations(users, ({ many }) => ({
   books: many(books),
+  refreshTokens: many(refreshTokens),
 }));
 
 // Books relations
@@ -118,5 +130,12 @@ export const chaptersRelations = relations(chapters, ({ one }) => ({
   volume: one(volumes, {
     fields: [chapters.volumeId],
     references: [volumes.id],
+  }),
+}));
+
+export const refreshTokenRelations = relations(refreshTokens, ({ one }) => ({
+  user: one(users, {
+    fields: [refreshTokens.userId],
+    references: [users.id],
   }),
 }));
