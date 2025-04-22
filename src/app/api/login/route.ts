@@ -1,10 +1,13 @@
 import { db } from "@/db";
-import { users, refreshTokens } from "@/db/schema";
+import { users } from "@/db/schema";
 import { eq } from "drizzle-orm";
-import { cookies } from "next/headers";
 import bcrypt from "bcryptjs";
-import jwt from "jsonwebtoken";
 import errorMessages from "@/constants/errorMessages";
+import {
+  generateAccessToken,
+  generateRefreshToken,
+  insertAndSetRT,
+} from "@/utils/forAuthTokens";
 
 export async function POST(req: Request) {
   try {
@@ -34,41 +37,11 @@ export async function POST(req: Request) {
       return new Response(errorMessages.PASSWORD_NOT_MATCH, { status: 401 });
     }
     // Generate tokens
-    const accessToken = jwt.sign(
-      { userId: existingUser[0].id },
-      process.env.ACCESS_SECRET as string,
-      {
-        expiresIn: "15m",
-      }
-    );
+    const accessToken = generateAccessToken(existingUser[0].id);
 
-    const refreshToken = jwt.sign(
-      { userId: existingUser[0].id },
-      process.env.REFRESH_SECRET as string,
-      {
-        expiresIn: "7d",
-      }
-    );
+    const refreshToken = generateRefreshToken(existingUser[0].id);
 
-    const expiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
-
-    // Save refresh token
-    await db.insert(refreshTokens).values({
-      userId: existingUser[0].id,
-      token: refreshToken,
-      expiresAt,
-    });
-
-    // Set refresh token in HTTP-only cookie
-    (await cookies()).set({
-      name: "refreshToken",
-      value: refreshToken,
-      httpOnly: true,
-      secure: true,
-      sameSite: "strict",
-      maxAge: 60 * 60 * 24 * 7,
-      path: "/",
-    });
+    await insertAndSetRT(existingUser[0].id, refreshToken);
 
     return Response.json({ accessToken });
   } catch (error) {

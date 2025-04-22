@@ -1,3 +1,4 @@
+import cookieLabels from "@/constants/cookieLabels";
 import errorMessages from "@/constants/errorMessages";
 import successMessages from "@/constants/successMessages";
 import { db } from "@/db";
@@ -8,22 +9,14 @@ import { cookies } from "next/headers";
 export async function DELETE() {
   try {
     const cookieStore = await cookies();
-    const refreshToken = cookieStore.get("refreshToken");
+    const refreshToken = cookieStore.get(cookieLabels.FOR_REFRESH_TOKEN);
 
     if (refreshToken) {
       await db
         .delete(refreshTokens)
         .where(eq(refreshTokens.token, refreshToken.value));
 
-      cookieStore.set({
-        name: "refreshToken",
-        value: "",
-        httpOnly: true,
-        secure: true,
-        sameSite: "strict",
-        expires: new Date(0), // expired
-        path: "/",
-      });
+      cookieStore.delete(cookieLabels.FOR_REFRESH_TOKEN);
     }
     return new Response(successMessages.LOG_OUT, { status: 200 });
   } catch (err) {
