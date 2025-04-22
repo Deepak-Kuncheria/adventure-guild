@@ -4,6 +4,8 @@ const errorMessages = {
   PASSWORD_NOT_MATCH: "Password doesn't match",
   SERVER_ERROR: "Internal server error",
   ACCOUNT_EXISTS: "Account already exists",
+  REFRESH_TOKEN_NOT_FOUND: "No refresh token",
+  INVALID_REFRESH_TOKEN: "Invalid refresh token",
 };
 
 export default errorMessages;
