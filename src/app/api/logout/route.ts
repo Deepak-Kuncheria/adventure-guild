@@ -1,4 +1,5 @@
-"use server";
+import errorMessages from "@/constants/errorMessages";
+import successMessages from "@/constants/successMessages";
 import { db } from "@/db";
 import { refreshTokens } from "@/db/schema";
 import { eq } from "drizzle-orm";
@@ -23,11 +24,10 @@ export async function DELETE() {
         expires: new Date(0), // expired
         path: "/",
       });
-      return new Response("Logged out", { status: 200 });
     }
-    return new Response("token not found", { status: 404 });
+    return new Response(successMessages.LOG_OUT, { status: 200 });
   } catch (err) {
     console.error(err);
-    return new Response("Server error", { status: 500 });
+    return new Response(errorMessages.SERVER_ERROR, { status: 500 });
   }
 }

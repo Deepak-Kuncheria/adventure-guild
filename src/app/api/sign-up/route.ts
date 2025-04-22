@@ -4,13 +4,14 @@ import { eq } from "drizzle-orm";
 import { cookies } from "next/headers";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
+import errorMessages from "@/constants/errorMessages";
 
 export async function POST(req: Request) {
   try {
     const { email, password, username } = await req.json();
 
     if (!email || !password) {
-      return new Response("Email and password are required", { status: 400 });
+      return new Response(errorMessages.EMAIL_PASSWORD_REQ, { status: 400 });
     }
 
     // Check if user already exists
@@ -19,7 +20,7 @@ export async function POST(req: Request) {
       .from(users)
       .where(eq(users.email, email));
     if (existingUser.length > 0) {
-      return new Response("Email already exists", { status: 409 });
+      return new Response(errorMessages.ACCOUNT_EXISTS, { status: 409 });
     }
 
     // Hash the password
@@ -71,6 +72,6 @@ export async function POST(req: Request) {
     return Response.json({ accessToken });
   } catch (error) {
     console.error(error);
-    return new Response("Server error", { status: 500 });
+    return new Response(errorMessages.SERVER_ERROR, { status: 500 });
   }
 }
