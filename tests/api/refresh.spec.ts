@@ -40,7 +40,7 @@ test.describe("Test /api/refresh", () => {
       },
     });
 
-    expect(res.ok()).toBeTruthy();
+    expect(res.status()).toBe(200);
     const json = await res.json();
     expect(json).toHaveProperty("accessToken");
   });
