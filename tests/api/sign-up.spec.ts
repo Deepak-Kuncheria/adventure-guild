@@ -5,6 +5,7 @@ import { eq } from "drizzle-orm";
 import dotenv from "dotenv";
 dotenv.config({ path: ".env" });
 test.describe("Sign up", () => {
+  test.describe.configure({ mode: "serial" });
   test("Sign up success", async ({ request }) => {
     const email = "hunter@mailinator.com";
     const res = await request.post("/api/sign-up", {

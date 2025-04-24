@@ -4,7 +4,9 @@ import { test, expect } from "@playwright/test";
 import { eq } from "drizzle-orm";
 import dotenv from "dotenv";
 dotenv.config({ path: ".env" });
-test.describe("Login", () => {
+
+test.describe("Test /api/login", () => {
+  test.describe.configure({ mode: "serial" });
   test("Success", async ({ request }) => {
     const email = "tester@mailinator.com";
     const res = await request.post("/api/login", {
@@ -14,6 +16,8 @@ test.describe("Login", () => {
       },
     });
     expect(res.ok()).toBeTruthy();
+    const setCookie = res.headers()["set-cookie"];
+    expect(setCookie).toContain("refreshToken");
     const [user] = await db.select().from(users).where(eq(users.email, email));
     await db.delete(refreshTokens).where(eq(refreshTokens.userId, user.id));
   });
