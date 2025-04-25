@@ -6,6 +6,7 @@ const errorMessages = {
   ACCOUNT_EXISTS: "Account already exists",
   REFRESH_TOKEN_NOT_FOUND: "No refresh token",
   INVALID_REFRESH_TOKEN: "Invalid refresh token",
+  INVALID_ACCESS_TOKEN: "Invalid access token",
 };
 
 export default errorMessages;

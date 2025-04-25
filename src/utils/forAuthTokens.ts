@@ -2,7 +2,7 @@ import cookieLabels from "@/constants/cookieLabels";
 import { db } from "@/db";
 import { refreshTokens } from "@/db/schema";
 import jwt from "jsonwebtoken";
-import { cookies } from "next/headers";
+import { cookies, headers } from "next/headers";
 export const generateAccessToken = (id: string) => {
   return jwt.sign({ userId: id }, process.env.ACCESS_SECRET as string, {
     expiresIn: "15m",
@@ -37,4 +37,21 @@ export const insertAndSetRT = async (id: string, refreshToken: string) => {
     maxAge: 60 * 60 * 24 * 7,
     path: "/",
   });
+};
+
+// function to decode access token from request headers
+export const decodeAccessTokenForAPI = async () => {
+  const authorization = (await headers()).get("Authorization");
+  if (!authorization || !authorization.startsWith("Bearer ")) {
+    return null;
+  }
+  const accessToken = authorization.split(" ")[1];
+  try {
+    return jwt.verify(accessToken, process.env.ACCESS_SECRET as string) as {
+      userId: string;
+    };
+  } catch (err) {
+    console.error(err);
+    return null;
+  }
 };
