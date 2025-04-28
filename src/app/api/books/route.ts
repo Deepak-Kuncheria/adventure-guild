@@ -31,9 +31,41 @@ export async function GET() {
         .from(books)
         .where(eq(books.isPublished, true));
     }
-    return Response.json({ books: allBooks });
+    return Response.json({ books: allBooks }, { status: 200 });
   } catch (err) {
     console.error(err);
+    return new Response(errorMessages.SERVER_ERROR, { status: 500 });
+  }
+}
+
+export async function POST(req: Request) {
+  try {
+    const { title, description, coverImageUrl } = await req.json();
+
+    if (!title) {
+      return new Response("Title is required", { status: 400 });
+    }
+    const decodedToken = await decodeAccessTokenForAPI();
+    if (!decodedToken) {
+      return new Response(errorMessages.ACCESS_DENIED, { status: 401 });
+    }
+    const role = await getUserRoleById(decodedToken.userId);
+    if (role !== userRoleEnum.enumValues[1]) {
+      return new Response(errorMessages.ACCESS_DENIED, { status: 403 });
+    }
+    const newBook = await db
+      .insert(books)
+      .values({
+        title,
+        description,
+        coverImageUrl,
+        authorId: decodedToken.userId,
+      })
+      .returning();
+
+    return Response.json({ data: newBook[0] }, { status: 200 });
+  } catch (error) {
+    console.error(error);
     return new Response(errorMessages.SERVER_ERROR, { status: 500 });
   }
 }
