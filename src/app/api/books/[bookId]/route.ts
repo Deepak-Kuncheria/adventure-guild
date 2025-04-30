@@ -54,13 +54,50 @@ export async function PATCH(
         "Respective book parameters was not sent with request.",
         { status: 400 }
       );
-    const newBook = await db
+    const updatedBook = await db
       .update(books)
       .set(updateData)
       .where(eq(books.id, bookId))
       .returning();
 
-    return Response.json({ data: newBook[0] }, { status: 200 });
+    return Response.json({ data: updatedBook[0] }, { status: 200 });
+  } catch (error) {
+    console.error(error);
+    return new Response(errorMessages.SERVER_ERROR, { status: 500 });
+  }
+}
+
+export async function DELETE(
+  req: Request,
+  {
+    params,
+  }: {
+    params: Promise<{ bookId: string }>;
+  }
+) {
+  try {
+    const { bookId } = await params;
+    if (!bookId) {
+      return new Response("Book Id is a required parameter", { status: 400 });
+    }
+    const decodedToken = await decodeAccessTokenForAPI();
+    if (!decodedToken) {
+      return new Response(errorMessages.ACCESS_DENIED, { status: 401 });
+    }
+    const role = await getUserRoleById(decodedToken.userId);
+    if (role !== userRoleEnum.enumValues[1]) {
+      return new Response(errorMessages.ACCESS_DENIED, { status: 403 });
+    }
+
+    const deletedBook = await db
+      .delete(books)
+      .where(eq(books.id, bookId))
+      .returning({ deletedTitle: books.title });
+
+    return Response.json(
+      { data: deletedBook[0].deletedTitle },
+      { status: 200 }
+    );
   } catch (error) {
     console.error(error);
     return new Response(errorMessages.SERVER_ERROR, { status: 500 });
