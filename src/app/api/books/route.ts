@@ -1,4 +1,5 @@
 import { ACCESS_DENIED } from "@/constants/errors/authErrors";
+import { BOOK_TITLE_REQ } from "@/constants/errors/bookErrors";
 import { SERVER_ERROR } from "@/constants/errors/commonErrors";
 import { db } from "@/db";
 import { books, USER_ROLE_CONSTANT } from "@/db/schema";
@@ -44,7 +45,7 @@ export async function POST(req: Request) {
     const { title, description, coverImageUrl } = await req.json();
 
     if (!title) {
-      return new Response("Title is required", { status: 400 });
+      return new Response(BOOK_TITLE_REQ, { status: 400 });
     }
     const decodedToken = await decodeAccessTokenForAPI();
     if (!decodedToken) {

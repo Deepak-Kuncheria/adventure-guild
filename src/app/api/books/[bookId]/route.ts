@@ -1,4 +1,10 @@
 import { ACCESS_DENIED } from "@/constants/errors/authErrors";
+import {
+  BOOK_ID_REQ,
+  BOOK_NOT_FOUND,
+  BOOK_PARAMS_RELEVANT,
+  BOOK_TITLE_EMPTY,
+} from "@/constants/errors/bookErrors";
 import { SERVER_ERROR } from "@/constants/errors/commonErrors";
 import { db } from "@/db";
 import { books, USER_ROLE_CONSTANT } from "@/db/schema";
@@ -15,7 +21,7 @@ export async function PATCH(
     const body = await req.json();
 
     if (!bookId) {
-      return new Response("Book Id is a required parameter", { status: 400 });
+      return new Response(BOOK_ID_REQ, { status: 400 });
     }
     const decodedToken = await decodeAccessTokenForAPI();
     if (!decodedToken) {
@@ -45,23 +51,20 @@ export async function PATCH(
       ) {
         const key = allowedFields[i].key;
         if (i === 0 && body[key].trim() === "") {
-          return new Response("Book title cannot be empty.", { status: 400 });
+          return new Response(BOOK_TITLE_EMPTY, { status: 400 });
         }
         updateData[key] = body[key];
       }
     }
     if (Object.keys(updateData).length === 0)
-      return new Response(
-        "Respective book parameters was not sent with request.",
-        { status: 400 }
-      );
+      return new Response(BOOK_PARAMS_RELEVANT, { status: 400 });
     const updatedBook = await db
       .update(books)
       .set(updateData)
       .where(eq(books.id, bookId))
       .returning();
     if (updatedBook.length === 0)
-      return new Response("Book not found", { status: 404 });
+      return new Response(BOOK_NOT_FOUND, { status: 404 });
     return Response.json({ data: updatedBook[0] }, { status: 200 });
   } catch (error) {
     console.error(error);
@@ -80,7 +83,7 @@ export async function DELETE(
   try {
     const { bookId } = await params;
     if (!bookId) {
-      return new Response("Book Id is a required parameter", { status: 400 });
+      return new Response(BOOK_ID_REQ, { status: 400 });
     }
     const decodedToken = await decodeAccessTokenForAPI();
     if (!decodedToken) {
@@ -96,7 +99,7 @@ export async function DELETE(
       .where(eq(books.id, bookId))
       .returning({ deletedTitle: books.title });
     if (deletedBook.length === 0)
-      return new Response("Book not found", { status: 404 });
+      return new Response(BOOK_NOT_FOUND, { status: 404 });
     return Response.json(
       { data: deletedBook[0].deletedTitle },
       { status: 200 }
