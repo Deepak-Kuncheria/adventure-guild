@@ -1,6 +1,6 @@
 import errorMessages from "@/constants/errorMessages";
 import { db } from "@/db";
-import { books, userRoleEnum } from "@/db/schema";
+import { books, USER_ROLE_CONSTANT, userRoleEnum } from "@/db/schema";
 import { decodeAccessTokenForAPI } from "@/utils/forAuthTokens";
 import { getUserRoleById } from "@/utils/usersDB";
 import { eq } from "drizzle-orm";
@@ -21,7 +21,7 @@ export async function PATCH(
       return new Response(errorMessages.ACCESS_DENIED, { status: 401 });
     }
     const role = await getUserRoleById(decodedToken.userId);
-    if (role !== userRoleEnum.enumValues[1]) {
+    if (role !== USER_ROLE_CONSTANT.AUTHOR) {
       return new Response(errorMessages.ACCESS_DENIED, { status: 403 });
     }
     const updateData: {
@@ -59,7 +59,8 @@ export async function PATCH(
       .set(updateData)
       .where(eq(books.id, bookId))
       .returning();
-
+    if (updatedBook.length === 0)
+      return new Response("Book not found", { status: 404 });
     return Response.json({ data: updatedBook[0] }, { status: 200 });
   } catch (error) {
     console.error(error);
@@ -85,7 +86,7 @@ export async function DELETE(
       return new Response(errorMessages.ACCESS_DENIED, { status: 401 });
     }
     const role = await getUserRoleById(decodedToken.userId);
-    if (role !== userRoleEnum.enumValues[1]) {
+    if (role !== USER_ROLE_CONSTANT.AUTHOR) {
       return new Response(errorMessages.ACCESS_DENIED, { status: 403 });
     }
 
@@ -93,7 +94,8 @@ export async function DELETE(
       .delete(books)
       .where(eq(books.id, bookId))
       .returning({ deletedTitle: books.title });
-
+    if (deletedBook.length === 0)
+      return new Response("Book not found", { status: 404 });
     return Response.json(
       { data: deletedBook[0].deletedTitle },
       { status: 200 }

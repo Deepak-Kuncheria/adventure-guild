@@ -1,6 +1,6 @@
 import errorMessages from "@/constants/errorMessages";
 import { db } from "@/db";
-import { books, userRoleEnum } from "@/db/schema";
+import { books, USER_ROLE_CONSTANT, userRoleEnum } from "@/db/schema";
 import { decodeAccessTokenForAPI } from "@/utils/forAuthTokens";
 import { getUserRoleById } from "@/utils/usersDB";
 import { eq } from "drizzle-orm";
@@ -16,7 +16,7 @@ export async function GET() {
       "userId" in decodedToken
     ) {
       const userRole = await getUserRoleById(decodedToken?.userId as string);
-      if (userRole && userRole === userRoleEnum.enumValues[1]) {
+      if (userRole && userRole === USER_ROLE_CONSTANT.AUTHOR) {
         isAdmin = true;
       }
     }
@@ -50,7 +50,7 @@ export async function POST(req: Request) {
       return new Response(errorMessages.ACCESS_DENIED, { status: 401 });
     }
     const role = await getUserRoleById(decodedToken.userId);
-    if (role !== userRoleEnum.enumValues[1]) {
+    if (role !== USER_ROLE_CONSTANT.AUTHOR) {
       return new Response(errorMessages.ACCESS_DENIED, { status: 403 });
     }
     const newBook = await db
