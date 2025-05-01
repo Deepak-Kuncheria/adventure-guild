@@ -1,6 +1,7 @@
 import cookieLabels from "@/constants/cookieLabels";
-import errorMessages from "@/constants/errorMessages";
-import successMessages from "@/constants/successMessages";
+import { SERVER_ERROR } from "@/constants/errors/commonErrors";
+import { LOG_OUT } from "@/constants/sucess/authSuccess";
+
 import { db } from "@/db";
 import { refreshTokens } from "@/db/schema";
 import { eq } from "drizzle-orm";
@@ -18,9 +19,9 @@ export async function DELETE() {
 
       cookieStore.delete(cookieLabels.FOR_REFRESH_TOKEN);
     }
-    return new Response(successMessages.LOG_OUT, { status: 200 });
+    return new Response(LOG_OUT, { status: 200 });
   } catch (err) {
     console.error(err);
-    return new Response(errorMessages.SERVER_ERROR, { status: 500 });
+    return new Response(SERVER_ERROR, { status: 500 });
   }
 }

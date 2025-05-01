@@ -1,6 +1,7 @@
-import errorMessages from "@/constants/errorMessages";
+import { ACCESS_DENIED } from "@/constants/errors/authErrors";
+import { SERVER_ERROR } from "@/constants/errors/commonErrors";
 import { db } from "@/db";
-import { books, USER_ROLE_CONSTANT, userRoleEnum } from "@/db/schema";
+import { books, USER_ROLE_CONSTANT } from "@/db/schema";
 import { decodeAccessTokenForAPI } from "@/utils/forAuthTokens";
 import { getUserRoleById } from "@/utils/usersDB";
 import { eq } from "drizzle-orm";
@@ -18,11 +19,11 @@ export async function PATCH(
     }
     const decodedToken = await decodeAccessTokenForAPI();
     if (!decodedToken) {
-      return new Response(errorMessages.ACCESS_DENIED, { status: 401 });
+      return new Response(ACCESS_DENIED, { status: 401 });
     }
     const role = await getUserRoleById(decodedToken.userId);
     if (role !== USER_ROLE_CONSTANT.AUTHOR) {
-      return new Response(errorMessages.ACCESS_DENIED, { status: 403 });
+      return new Response(ACCESS_DENIED, { status: 403 });
     }
     const updateData: {
       [key: string]: string | boolean | undefined;
@@ -64,7 +65,7 @@ export async function PATCH(
     return Response.json({ data: updatedBook[0] }, { status: 200 });
   } catch (error) {
     console.error(error);
-    return new Response(errorMessages.SERVER_ERROR, { status: 500 });
+    return new Response(SERVER_ERROR, { status: 500 });
   }
 }
 
@@ -83,11 +84,11 @@ export async function DELETE(
     }
     const decodedToken = await decodeAccessTokenForAPI();
     if (!decodedToken) {
-      return new Response(errorMessages.ACCESS_DENIED, { status: 401 });
+      return new Response(ACCESS_DENIED, { status: 401 });
     }
     const role = await getUserRoleById(decodedToken.userId);
     if (role !== USER_ROLE_CONSTANT.AUTHOR) {
-      return new Response(errorMessages.ACCESS_DENIED, { status: 403 });
+      return new Response(ACCESS_DENIED, { status: 403 });
     }
 
     const deletedBook = await db
@@ -102,6 +103,6 @@ export async function DELETE(
     );
   } catch (error) {
     console.error(error);
-    return new Response(errorMessages.SERVER_ERROR, { status: 500 });
+    return new Response(SERVER_ERROR, { status: 500 });
   }
 }

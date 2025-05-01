@@ -1,11 +1,16 @@
 import cookieLabels from "@/constants/cookieLabels";
-import errorMessages from "@/constants/errorMessages";
+
 import { db } from "@/db";
 import { refreshTokens } from "@/db/schema";
 import { eq } from "drizzle-orm";
 import { cookies } from "next/headers";
 import jwt, { JwtPayload } from "jsonwebtoken";
 import { generateAccessToken } from "@/utils/forAuthTokens";
+import {
+  REFRESH_TOKEN_NOT_FOUND,
+  INVALID_REFRESH_TOKEN,
+} from "@/constants/errors/authErrors";
+import { SERVER_ERROR } from "@/constants/errors/commonErrors";
 
 export async function POST() {
   try {
@@ -13,7 +18,7 @@ export async function POST() {
     const refreshToken = cookieStore.get(cookieLabels.FOR_REFRESH_TOKEN);
 
     if (!refreshToken) {
-      return new Response(errorMessages.REFRESH_TOKEN_NOT_FOUND, {
+      return new Response(REFRESH_TOKEN_NOT_FOUND, {
         status: 401,
       });
     }
@@ -26,14 +31,14 @@ export async function POST() {
     } catch (err) {
       // log error???
       console.error(err);
-      return new Response(errorMessages.INVALID_REFRESH_TOKEN, { status: 403 });
+      return new Response(INVALID_REFRESH_TOKEN, { status: 403 });
     }
     const [dbToken] = await db
       .select()
       .from(refreshTokens)
       .where(eq(refreshTokens.token, refreshToken.value));
     if (!dbToken) {
-      return new Response(errorMessages.REFRESH_TOKEN_NOT_FOUND, {
+      return new Response(REFRESH_TOKEN_NOT_FOUND, {
         status: 403,
       });
     }
@@ -41,6 +46,6 @@ export async function POST() {
     return Response.json({ accessToken });
   } catch (err) {
     console.error(err);
-    return new Response(errorMessages.SERVER_ERROR, { status: 500 });
+    return new Response(SERVER_ERROR, { status: 500 });
   }
 }
