@@ -46,7 +46,7 @@ test.describe("Sign up", () => {
   test("account exists", async ({ request }) => {
     const res = await request.post("/api/sign-up", {
       data: {
-        email: "deepaktk98@gmail.com",
+        email: process.env.TEST_ADMIN,
         password: "password",
         username: "fake hunter",
       },
