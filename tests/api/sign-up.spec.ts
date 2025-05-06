@@ -2,8 +2,7 @@ import { db } from "@/db";
 import { refreshTokens, users } from "@/db/schema";
 import { test, expect } from "@playwright/test";
 import { eq } from "drizzle-orm";
-import dotenv from "dotenv";
-dotenv.config({ path: ".env" });
+
 test.describe("Sign up", () => {
   test.describe.configure({ mode: "serial" });
   test("Sign up success", async ({ request }) => {

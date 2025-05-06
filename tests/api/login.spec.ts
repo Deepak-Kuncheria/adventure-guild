@@ -2,8 +2,6 @@ import { db } from "@/db";
 import { refreshTokens, users } from "@/db/schema";
 import { test, expect } from "@playwright/test";
 import { eq } from "drizzle-orm";
-import dotenv from "dotenv";
-dotenv.config({ path: ".env" });
 
 test.describe("Test /api/login", () => {
   test.describe.configure({ mode: "serial" });

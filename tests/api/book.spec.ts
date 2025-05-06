@@ -2,9 +2,7 @@ import { db } from "@/db";
 import { users } from "@/db/schema";
 import { test, expect } from "@playwright/test";
 import { eq } from "drizzle-orm";
-import dotenv from "dotenv";
 import { generateAccessToken } from "@/utils/forAuthTokens";
-dotenv.config({ path: ".env" });
 
 test.describe("Testing books api", async () => {
   test("Get all published books for non-author roled users", async ({
