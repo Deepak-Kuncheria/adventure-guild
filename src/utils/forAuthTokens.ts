@@ -3,13 +3,14 @@ import { db } from "@/db";
 import { refreshTokens } from "@/db/schema";
 import jwt from "jsonwebtoken";
 import { cookies, headers } from "next/headers";
-export const generateAccessToken = (id: string) => {
+import { UUIDTypes } from "uuid";
+export const generateAccessToken = (id: string | UUIDTypes) => {
   return jwt.sign({ userId: id }, process.env.ACCESS_SECRET as string, {
     expiresIn: "15m",
   });
 };
 
-export const generateRefreshToken = (id: string) => {
+export const generateRefreshToken = (id: string | UUIDTypes) => {
   return jwt.sign({ userId: id }, process.env.REFRESH_SECRET as string, {
     expiresIn: "7d",
   });

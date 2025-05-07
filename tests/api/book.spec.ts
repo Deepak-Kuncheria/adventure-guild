@@ -3,9 +3,26 @@ import { books, users } from "@/db/schema";
 import { test, expect } from "@playwright/test";
 import { eq } from "drizzle-orm";
 import { generateAccessToken } from "@/utils/forAuthTokens";
+import { UUIDTypes } from "uuid";
 
 test.describe("Testing books api", async () => {
   test.describe.configure({ mode: "serial" });
+  let testUserId: { id: UUIDTypes }[];
+  let validToken: string;
+  let reader: { id: UUIDTypes };
+  test.beforeAll(async () => {
+    testUserId = await db
+      .select({ id: users.id })
+      .from(users)
+      .where(eq(users.email, process.env.TEST_ADMIN as string));
+
+    validToken = generateAccessToken(testUserId[0].id);
+    [reader] = await db
+      .select({ id: users.id })
+      .from(users)
+      .where(eq(users.userRole, "reader"))
+      .limit(1);
+  });
   test("Get all published books for non-author roled users", async ({
     request,
   }) => {
@@ -18,15 +35,9 @@ test.describe("Testing books api", async () => {
     }
   });
   test("Get all books for Author user", async ({ request }) => {
-    const testUserId = await db
-      .select({ id: users.id })
-      .from(users)
-      .where(eq(users.email, process.env.TEST_ADMIN as string));
-
-    const accessToken = generateAccessToken(testUserId[0].id);
     const res = await request.get("/api/books", {
       headers: {
-        Authorization: `Bearer ${accessToken}`,
+        Authorization: `Bearer ${validToken}`,
       },
     });
     expect(res.status()).toBe(200);
@@ -34,15 +45,6 @@ test.describe("Testing books api", async () => {
     expect(Array.isArray(body.books)).toBe(true);
   });
   test.describe("POST books API", () => {
-    let validToken: string;
-    test.beforeAll(async () => {
-      const testUserId = await db
-        .select({ id: users.id })
-        .from(users)
-        .where(eq(users.email, process.env.TEST_ADMIN as string));
-
-      validToken = generateAccessToken(testUserId[0].id);
-    });
     test("Create a new book by author", async ({ request }) => {
       const example = {
         title:
@@ -94,11 +96,6 @@ test.describe("Testing books api", async () => {
     test("Return 403 when book is inserted by non-author user", async ({
       request,
     }) => {
-      const [reader] = await db
-        .select({ id: users.id })
-        .from(users)
-        .where(eq(users.userRole, "reader"))
-        .limit(1);
       const invalidToken = generateAccessToken(reader?.id);
       const example = {
         title:
@@ -117,21 +114,15 @@ test.describe("Testing books api", async () => {
   });
   test.describe("Books API with bookId as param", () => {
     let newBook: { id: string }[];
-    let validToken: string;
-    test.beforeAll(async () => {
-      const testUserId = await db
-        .select({ id: users.id })
-        .from(users)
-        .where(eq(users.email, process.env.TEST_ADMIN as string));
 
-      validToken = generateAccessToken(testUserId[0].id);
+    test.beforeAll(async () => {
       newBook = await db
         .insert(books)
         .values({
           title: "insert a new book ",
           description: "lorem ipsum",
           coverImageUrl: "",
-          authorId: testUserId[0].id,
+          authorId: testUserId[0].id as string,
         })
         .returning({ id: books.id });
     });
@@ -159,11 +150,6 @@ test.describe("Testing books api", async () => {
       test("Return 403 when non-author user updates a book", async ({
         request,
       }) => {
-        const [reader] = await db
-          .select({ id: users.id })
-          .from(users)
-          .where(eq(users.userRole, "reader"))
-          .limit(1);
         const invalidToken = generateAccessToken(reader?.id);
         const res = await request.patch(`/api/books/${newBook[0]?.id}`, {
           headers: {
@@ -219,11 +205,6 @@ test.describe("Testing books api", async () => {
       test("Return 403 when non-author user deletes a book", async ({
         request,
       }) => {
-        const [reader] = await db
-          .select({ id: users.id })
-          .from(users)
-          .where(eq(users.userRole, "reader"))
-          .limit(1);
         const invalidToken = generateAccessToken(reader?.id);
         const res = await request.delete(`/api/books/${newBook[0]?.id}`, {
           headers: {
