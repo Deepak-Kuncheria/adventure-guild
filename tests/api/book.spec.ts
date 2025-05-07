@@ -5,6 +5,7 @@ import { eq } from "drizzle-orm";
 import { generateAccessToken } from "@/utils/forAuthTokens";
 
 test.describe("Testing books api", async () => {
+  test.describe.configure({ mode: "serial" });
   test("Get all published books for non-author roled users", async ({
     request,
   }) => {
@@ -191,6 +192,61 @@ test.describe("Testing books api", async () => {
         const body = await res.json();
         expect(body.data.title).toBe(example.title);
         expect(body.data.description).toBe(example.description);
+      });
+    });
+    test.describe("DELETE books API", () => {
+      test("Return 405 when bookId param is missing", async ({ request }) => {
+        const res = await request.delete(`/api/books`);
+        expect(res.status()).toBe(405);
+      });
+      test("Return 400 when bookId param is empty", async ({ request }) => {
+        const res = await request.delete(`/api/books/${null}`, {
+          headers: {
+            Authorization: `Bearer ${validToken}`,
+          },
+        });
+        expect(res.status()).toBe(400);
+      });
+      test("Return 401 when access token is invalid", async ({ request }) => {
+        const invalidToken = generateAccessToken("");
+        const res = await request.delete(`/api/books/${newBook[0]?.id}`, {
+          headers: {
+            Authorization: `Bearer ${invalidToken}`,
+          },
+        });
+        expect(res.status()).toBe(401);
+      });
+      test("Return 403 when non-author user deletes a book", async ({
+        request,
+      }) => {
+        const [reader] = await db
+          .select({ id: users.id })
+          .from(users)
+          .where(eq(users.userRole, "reader"))
+          .limit(1);
+        const invalidToken = generateAccessToken(reader?.id);
+        const res = await request.delete(`/api/books/${newBook[0]?.id}`, {
+          headers: {
+            Authorization: `Bearer ${invalidToken}`,
+          },
+        });
+        expect(res.status()).toBe(403);
+      });
+      test("Return 200 with updated book title by author", async ({
+        request,
+      }) => {
+        const res = await request.delete(`/api/books/${newBook[0]?.id}`, {
+          headers: {
+            Authorization: `Bearer ${validToken}`,
+          },
+        });
+        expect(res.status()).toBe(200);
+
+        const deletedBook = await db
+          .select()
+          .from(books)
+          .where(eq(books.id, newBook[0]?.id));
+        expect(deletedBook.length).toBe(0);
       });
     });
   });
