@@ -18,8 +18,12 @@ export async function PATCH(
 ) {
   try {
     const { bookId } = await params;
-    const body = await req.json();
-
+    let body;
+    try {
+      body = await req.json();
+    } catch {
+      return new Response(BOOK_PARAMS_RELEVANT, { status: 400 });
+    }
     if (!bookId) {
       return new Response(BOOK_ID_REQ, { status: 400 });
     }
