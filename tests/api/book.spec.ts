@@ -32,7 +32,7 @@ test.describe("Testing books api", async () => {
     const body = await res.json();
     expect(Array.isArray(body.books)).toBe(true);
   });
-  test.describe("POST books api", () => {
+  test.describe("POST books API", () => {
     let validToken: string;
     test.beforeAll(async () => {
       const testUserId = await db
@@ -60,6 +60,58 @@ test.describe("Testing books api", async () => {
       expect(body.data.title).toBe(example.title);
       expect(body.data.description).toBe(example.description);
       await db.delete(books).where(eq(books.id, body.data.id));
+    });
+    test("Return 400 when title is missing paramter", async ({ request }) => {
+      const example = {
+        description:
+          "lorem impsum lorem lorem impsum lorem lorem impsum loremlorem impsum loremlorem impsum loremlorem impsum loremlorem impsum loremlorem impsum lorem",
+      };
+      const res = await request.post("/api/books", {
+        headers: {
+          Authorization: `Bearer ${validToken}`,
+        },
+        data: example,
+      });
+      expect(res.status()).toBe(400);
+    });
+    test("Return 401 when access token is invalid", async ({ request }) => {
+      const invalidToken = generateAccessToken("");
+      const example = {
+        title:
+          "dummy title.............................................w232....",
+        description:
+          "lorem impsum lorem lorem impsum lorem lorem impsum loremlorem impsum loremlorem impsum loremlorem impsum loremlorem impsum loremlorem impsum lorem",
+      };
+      const res = await request.post("/api/books", {
+        headers: {
+          Authorization: `Bearer ${invalidToken}`,
+        },
+        data: example,
+      });
+      expect(res.status()).toBe(401);
+    });
+    test("Return 403 when book is inserted by non-author user", async ({
+      request,
+    }) => {
+      const [reader] = await db
+        .select({ id: users.id })
+        .from(users)
+        .where(eq(users.userRole, "reader"))
+        .limit(1);
+      const invalidToken = generateAccessToken(reader?.id);
+      const example = {
+        title:
+          "dummy title.............................................w232....",
+        description:
+          "lorem impsum lorem lorem impsum lorem lorem impsum loremlorem impsum loremlorem impsum loremlorem impsum loremlorem impsum loremlorem impsum lorem",
+      };
+      const res = await request.post("/api/books", {
+        headers: {
+          Authorization: `Bearer ${invalidToken}`,
+        },
+        data: example,
+      });
+      expect(res.status()).toBe(403);
     });
   });
 });
