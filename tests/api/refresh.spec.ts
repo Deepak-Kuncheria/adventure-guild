@@ -3,11 +3,8 @@ import jwt from "jsonwebtoken";
 import { db } from "@/db";
 import { refreshTokens } from "@/db/schema";
 import { eq } from "drizzle-orm";
-import dotenv from "dotenv";
 import { generateRefreshToken } from "@/utils/forAuthTokens";
 import cookieLabels from "@/constants/cookieLabels";
-
-dotenv.config({ path: ".env" });
 
 const testUserId = "c68e6c17-f120-4320-b749-1d74b08f7245";
 

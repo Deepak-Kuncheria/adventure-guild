@@ -2,13 +2,11 @@ import { db } from "@/db";
 import { refreshTokens, users } from "@/db/schema";
 import { test, expect } from "@playwright/test";
 import { eq } from "drizzle-orm";
-import dotenv from "dotenv";
-dotenv.config({ path: ".env" });
 
 test.describe("Test /api/login", () => {
   test.describe.configure({ mode: "serial" });
   test("Success", async ({ request }) => {
-    const email = "tester@mailinator.com";
+    const email = process.env.TESTER_MAILINATOR as string;
     const res = await request.post("/api/login", {
       data: {
         email,
@@ -32,7 +30,7 @@ test.describe("Test /api/login", () => {
     expect(res.status()).toBe(400);
   });
   test("password missing", async ({ request }) => {
-    const email = "tester@mailinator.com";
+    const email = process.env.TESTER_MAILINATOR;
     const res = await request.post("/api/login", {
       data: {
         email,
@@ -51,7 +49,7 @@ test.describe("Test /api/login", () => {
     expect(res.status()).toBe(401);
   });
   test("Password does not match", async ({ request }) => {
-    const email = "tester@mailinator.com";
+    const email = process.env.TESTER_MAILINATOR;
     const res = await request.post("/api/login", {
       data: {
         email,

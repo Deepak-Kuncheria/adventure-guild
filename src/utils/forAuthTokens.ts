@@ -3,13 +3,14 @@ import { db } from "@/db";
 import { refreshTokens } from "@/db/schema";
 import jwt from "jsonwebtoken";
 import { cookies, headers } from "next/headers";
-export const generateAccessToken = (id: string) => {
+import { UUIDTypes } from "uuid";
+export const generateAccessToken = (id: string | UUIDTypes) => {
   return jwt.sign({ userId: id }, process.env.ACCESS_SECRET as string, {
     expiresIn: "15m",
   });
 };
 
-export const generateRefreshToken = (id: string) => {
+export const generateRefreshToken = (id: string | UUIDTypes) => {
   return jwt.sign({ userId: id }, process.env.REFRESH_SECRET as string, {
     expiresIn: "7d",
   });
@@ -47,9 +48,21 @@ export const decodeAccessTokenForAPI = async () => {
   }
   const accessToken = authorization.split(" ")[1];
   try {
-    return jwt.verify(accessToken, process.env.ACCESS_SECRET as string) as {
+    const decoded = jwt.verify(
+      accessToken,
+      process.env.ACCESS_SECRET as string
+    ) as {
       userId: string;
     };
+    if (
+      !decoded ||
+      (decoded && !("userId" in decoded)) ||
+      typeof decoded?.userId !== "string" ||
+      decoded?.userId.trim() === ""
+    ) {
+      return null;
+    }
+    return decoded;
   } catch (err) {
     console.error(err);
     return null;

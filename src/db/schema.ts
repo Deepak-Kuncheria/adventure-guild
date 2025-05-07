@@ -15,6 +15,10 @@ import {
 
 // First, define the enum
 export const userRoleEnum = pgEnum("user_role", ["reader", "author"]);
+export const USER_ROLE_CONSTANT = {
+  READER: "reader",
+  AUTHOR: "author",
+};
 // custom lower function
 function lower(email: AnyPgColumn): SQL {
   return sql`lower(${email})`;

@@ -2,8 +2,7 @@ import { db } from "@/db";
 import { refreshTokens, users } from "@/db/schema";
 import { test, expect } from "@playwright/test";
 import { eq } from "drizzle-orm";
-import dotenv from "dotenv";
-dotenv.config({ path: ".env" });
+
 test.describe("Sign up", () => {
   test.describe.configure({ mode: "serial" });
   test("Sign up success", async ({ request }) => {
@@ -46,7 +45,7 @@ test.describe("Sign up", () => {
   test("account exists", async ({ request }) => {
     const res = await request.post("/api/sign-up", {
       data: {
-        email: "deepaktk98@gmail.com",
+        email: process.env.TEST_ADMIN,
         password: "password",
         username: "fake hunter",
       },

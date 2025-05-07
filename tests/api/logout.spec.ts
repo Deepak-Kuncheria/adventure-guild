@@ -15,7 +15,7 @@ test.describe("Logout", () => {
   let refreshToken: string;
   let cookieHeader: string;
 
-  test.beforeEach(async () => {
+  test.beforeAll(async () => {
     // Insert user if not exists
     const [user] =
       (await db.select().from(users).where(eq(users.email, dummyUser.email))) ??
@@ -67,7 +67,7 @@ test.describe("Logout", () => {
     expect(res.status()).toBe(200); // Still returns success even without token
   });
 
-  test.afterEach(async () => {
+  test.afterAll(async () => {
     await db.delete(refreshTokens).where(eq(refreshTokens.token, refreshToken));
     await db.delete(users).where(eq(users.email, dummyUser.email));
   });
