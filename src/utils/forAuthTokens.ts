@@ -47,9 +47,21 @@ export const decodeAccessTokenForAPI = async () => {
   }
   const accessToken = authorization.split(" ")[1];
   try {
-    return jwt.verify(accessToken, process.env.ACCESS_SECRET as string) as {
+    const decoded = jwt.verify(
+      accessToken,
+      process.env.ACCESS_SECRET as string
+    ) as {
       userId: string;
     };
+    if (
+      !decoded ||
+      (decoded && !("userId" in decoded)) ||
+      typeof decoded?.userId !== "string" ||
+      decoded?.userId.trim() === ""
+    ) {
+      return null;
+    }
+    return decoded;
   } catch (err) {
     console.error(err);
     return null;
