@@ -11,6 +11,7 @@ import { books, USER_ROLE_CONSTANT } from "@/db/schema";
 import { decodeAccessTokenForAPI } from "@/utils/forAuthTokens";
 import { getUserRoleById } from "@/utils/usersDB";
 import { eq } from "drizzle-orm";
+import { validate as uuidValidate } from "uuid";
 
 export async function PATCH(
   req: Request,
@@ -24,7 +25,7 @@ export async function PATCH(
     } catch {
       return new Response(BOOK_PARAMS_RELEVANT, { status: 400 });
     }
-    if (!bookId) {
+    if (!bookId || !uuidValidate(bookId)) {
       return new Response(BOOK_ID_REQ, { status: 400 });
     }
     const decodedToken = await decodeAccessTokenForAPI();
@@ -86,9 +87,10 @@ export async function DELETE(
 ) {
   try {
     const { bookId } = await params;
-    if (!bookId) {
+    if (!bookId || !uuidValidate(bookId)) {
       return new Response(BOOK_ID_REQ, { status: 400 });
     }
+
     const decodedToken = await decodeAccessTokenForAPI();
     if (!decodedToken) {
       return new Response(ACCESS_DENIED, { status: 401 });
