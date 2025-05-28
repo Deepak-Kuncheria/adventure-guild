@@ -13,7 +13,7 @@ import { getUserRoleById } from "@/utils/usersDB";
 import { eq } from "drizzle-orm";
 import { validate as uuidValidate } from "uuid";
 
-export async function PATCH(
+export async function PUT(
   req: Request,
   { params }: { params: Promise<{ bookId: string }> }
 ) {

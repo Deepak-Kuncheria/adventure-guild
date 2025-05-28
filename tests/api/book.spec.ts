@@ -126,18 +126,18 @@ test.describe("Testing books api", async () => {
         })
         .returning({ id: books.id });
     });
-    test.describe("PATCH books API", () => {
+    test.describe("PUT books API", () => {
       test("Return 405 when bookId param is missing", async ({ request }) => {
-        const res = await request.patch(`/api/books`);
+        const res = await request.put(`/api/books`);
         expect(res.status()).toBe(405);
       });
       test("Return 400 when bookId param is empty", async ({ request }) => {
-        const res = await request.patch(`/api/books/null`);
+        const res = await request.put(`/api/books/null`);
         expect(res.status()).toBe(400);
       });
       test("Return 401 when access token is invalid", async ({ request }) => {
         const invalidToken = generateAccessToken("");
-        const res = await request.patch(`/api/books/${newBook[0]?.id}`, {
+        const res = await request.put(`/api/books/${newBook[0]?.id}`, {
           headers: {
             Authorization: `Bearer ${invalidToken}`,
           },
@@ -151,7 +151,7 @@ test.describe("Testing books api", async () => {
         request,
       }) => {
         const invalidToken = generateAccessToken(reader?.id);
-        const res = await request.patch(`/api/books/${newBook[0]?.id}`, {
+        const res = await request.put(`/api/books/${newBook[0]?.id}`, {
           headers: {
             Authorization: `Bearer ${invalidToken}`,
           },
@@ -168,7 +168,7 @@ test.describe("Testing books api", async () => {
           title: "update book by author",
           description: "updated",
         };
-        const res = await request.patch(`/api/books/${newBook[0]?.id}`, {
+        const res = await request.put(`/api/books/${newBook[0]?.id}`, {
           headers: {
             Authorization: `Bearer ${validToken}`,
           },
