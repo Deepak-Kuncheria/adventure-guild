@@ -1,10 +1,5 @@
 import { ACCESS_DENIED } from "@/constants/errors/authErrors";
-import {
-  BOOK_ID_REQ,
-  BOOK_NOT_FOUND,
-  BOOK_PARAMS_RELEVANT,
-  BOOK_TITLE_EMPTY,
-} from "@/constants/errors/bookErrors";
+import { BOOK_TITLE_EMPTY } from "@/constants/errors/bookErrors";
 import { SERVER_ERROR } from "@/constants/errors/commonErrors";
 import {
   VOLUME_ID_IS_REQ,
@@ -12,7 +7,7 @@ import {
   VOLUME_RELEVANT_PARAMS,
 } from "@/constants/errors/volumeErrors";
 import { db } from "@/db";
-import { books, USER_ROLE_CONSTANT, volumes } from "@/db/schema";
+import { USER_ROLE_CONSTANT, volumes } from "@/db/schema";
 import { decodeAccessTokenForAPI } from "@/utils/forAuthTokens";
 import { getUserRoleById } from "@/utils/usersDB";
 import { eq } from "drizzle-orm";
