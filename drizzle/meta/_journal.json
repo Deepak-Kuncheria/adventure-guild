@@ -15,6 +15,13 @@
       "when": 1745235006524,
       "tag": "0001_parched_james_howlett",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1748528238789,
+      "tag": "0002_ambitious_iron_fist",
+      "breakpoints": true
     }
   ]
 }

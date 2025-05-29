@@ -1,13 +1,13 @@
 import { ACCESS_DENIED } from "@/constants/errors/authErrors";
-import {
-  BOOK_ID_REQ,
-  BOOK_NOT_FOUND,
-  BOOK_PARAMS_RELEVANT,
-  BOOK_TITLE_EMPTY,
-} from "@/constants/errors/bookErrors";
+import { BOOK_TITLE_EMPTY } from "@/constants/errors/bookErrors";
 import { SERVER_ERROR } from "@/constants/errors/commonErrors";
+import {
+  VOLUME_ID_IS_REQ,
+  VOLUME_NOT_FOUND,
+  VOLUME_RELEVANT_PARAMS,
+} from "@/constants/errors/volumeErrors";
 import { db } from "@/db";
-import { books, USER_ROLE_CONSTANT } from "@/db/schema";
+import { USER_ROLE_CONSTANT, volumes } from "@/db/schema";
 import { decodeAccessTokenForAPI } from "@/utils/forAuthTokens";
 import { getUserRoleById } from "@/utils/usersDB";
 import { eq } from "drizzle-orm";
@@ -15,18 +15,18 @@ import { validate as uuidValidate } from "uuid";
 
 export async function PUT(
   req: Request,
-  { params }: { params: Promise<{ bookId: string }> }
+  { params }: { params: Promise<{ volumeId: string }> }
 ) {
   try {
-    const { bookId } = await params;
+    const { volumeId } = await params;
     let body;
     try {
       body = await req.json();
     } catch {
-      return new Response(BOOK_PARAMS_RELEVANT, { status: 400 });
+      return new Response(VOLUME_RELEVANT_PARAMS, { status: 400 });
     }
-    if (!bookId || !uuidValidate(bookId)) {
-      return new Response(BOOK_ID_REQ, { status: 400 });
+    if (!volumeId || !uuidValidate(volumeId)) {
+      return new Response(VOLUME_ID_IS_REQ, { status: 400 });
     }
     const decodedToken = await decodeAccessTokenForAPI();
     if (!decodedToken) {
@@ -39,16 +39,8 @@ export async function PUT(
     const updateData: {
       [key: string]: string | boolean | undefined;
       title?: string;
-      description?: string;
-      coverImageUrl?: string;
-      isPublished?: boolean;
     } = {};
-    const allowedFields = [
-      { key: "title", type: "string" },
-      { key: "description", type: "string" },
-      { key: "coverImageUrl", type: "string" },
-      { key: "isPublished", type: "boolean" },
-    ];
+    const allowedFields = [{ key: "title", type: "string" }];
     for (let i = 0; i < allowedFields.length; i++) {
       if (
         allowedFields[i].key in body &&
@@ -62,15 +54,15 @@ export async function PUT(
       }
     }
     if (Object.keys(updateData).length === 0)
-      return new Response(BOOK_PARAMS_RELEVANT, { status: 400 });
-    const updatedBook = await db
-      .update(books)
+      return new Response(VOLUME_RELEVANT_PARAMS, { status: 400 });
+    const updatedVolume = await db
+      .update(volumes)
       .set(updateData)
-      .where(eq(books.id, bookId))
+      .where(eq(volumes.id, volumeId))
       .returning();
-    if (updatedBook.length === 0)
-      return new Response(BOOK_NOT_FOUND, { status: 404 });
-    return Response.json({ data: updatedBook[0] }, { status: 200 });
+    if (updatedVolume.length === 0)
+      return new Response(VOLUME_NOT_FOUND, { status: 404 });
+    return Response.json({ data: updatedVolume[0] }, { status: 200 });
   } catch (error) {
     console.error(error);
     return new Response(SERVER_ERROR, { status: 500 });
@@ -82,13 +74,13 @@ export async function DELETE(
   {
     params,
   }: {
-    params: Promise<{ bookId: string }>;
+    params: Promise<{ volumeId: string }>;
   }
 ) {
   try {
-    const { bookId } = await params;
-    if (!bookId || !uuidValidate(bookId)) {
-      return new Response(BOOK_ID_REQ, { status: 400 });
+    const { volumeId } = await params;
+    if (!volumeId || !uuidValidate(volumeId)) {
+      return new Response(VOLUME_ID_IS_REQ, { status: 400 });
     }
 
     const decodedToken = await decodeAccessTokenForAPI();
@@ -100,16 +92,13 @@ export async function DELETE(
       return new Response(ACCESS_DENIED, { status: 403 });
     }
 
-    const deletedBook = await db
-      .delete(books)
-      .where(eq(books.id, bookId))
-      .returning({ deletedTitle: books.title });
-    if (deletedBook.length === 0)
-      return new Response(BOOK_NOT_FOUND, { status: 404 });
-    return Response.json(
-      { data: deletedBook[0].deletedTitle },
-      { status: 200 }
-    );
+    const deletedVol = await db
+      .delete(volumes)
+      .where(eq(volumes.id, volumeId))
+      .returning({ deletedTitle: volumes.title });
+    if (deletedVol.length === 0)
+      return new Response(VOLUME_NOT_FOUND, { status: 404 });
+    return Response.json({ data: deletedVol[0].deletedTitle }, { status: 200 });
   } catch (error) {
     console.error(error);
     return new Response(SERVER_ERROR, { status: 500 });

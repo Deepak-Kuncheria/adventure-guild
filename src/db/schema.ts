@@ -11,6 +11,7 @@ import {
   AnyPgColumn,
   uniqueIndex,
   pgEnum,
+  index,
 } from "drizzle-orm/pg-core";
 
 // First, define the enum
@@ -34,67 +35,114 @@ export const users = pgTable(
     userRole: userRoleEnum("user_role").default("reader"),
     createdAt: timestamp("created_at").defaultNow(),
   },
-  (table) => [uniqueIndex("emailUniqueIndex").on(lower(table.email))]
+  (table) => [
+    uniqueIndex("emailUniqueIndex").on(lower(table.email)),
+    index("username_idx").on(table.username),
+    index("userRole_idx").on(table.userRole),
+  ]
 );
 
 // Books Table
-export const books = pgTable("books", {
-  id: uuid("id").primaryKey().defaultRandom(),
-  title: text("title").notNull(),
-  description: text("description"),
-  coverImageUrl: text("cover_image_url"),
-  authorId: uuid("author_id")
-    .notNull()
-    .references(() => users.id),
-  isPublished: boolean("is_published").default(false),
-  createdAt: timestamp("created_at").defaultNow(),
-  updatedAt: timestamp("updated_at").defaultNow(),
-});
+export const books = pgTable(
+  "books",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    title: text("title").notNull(),
+    description: text("description"),
+    coverImageUrl: text("cover_image_url"),
+    authorId: uuid("author_id")
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    isPublished: boolean("is_published").default(false),
+    createdAt: timestamp("created_at").defaultNow(),
+    updatedAt: timestamp("updated_at").defaultNow(),
+  },
+  (table) => [
+    index("book_title_idx").on(table.title),
+    index("book_isPublish_idx").on(table.isPublished),
+    index("book_title_isPublish_idx").on(table.isPublished, table.title),
+  ]
+);
 
 // Volumes Table
-export const volumes = pgTable("volumes", {
-  id: uuid("id").primaryKey().defaultRandom(),
-  bookId: uuid("book_id")
-    .notNull()
-    .references(() => books.id),
-  title: text("title"),
-  volumeNumber: integer("volume_number").notNull(),
-  createdAt: timestamp("created_at").defaultNow(),
-});
+export const volumes = pgTable(
+  "volumes",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    bookId: uuid("book_id")
+      .notNull()
+      .references(() => books.id, { onDelete: "cascade" }),
+    title: text("title"),
+    volumeNumber: integer("volume_number").notNull(),
+    createdAt: timestamp("created_at").defaultNow(),
+  },
+  (table) => [
+    index("volume_title_idx").on(table.title),
+    index("volume_bookId_idx").on(table.bookId),
+    index("volume_title_bookId_idx").on(table.bookId, table.title),
+  ]
+);
 
 // Chapters Table
-export const chapters = pgTable("chapters", {
-  id: uuid("id").primaryKey().defaultRandom(),
-  bookId: uuid("book_id")
-    .notNull()
-    .references(() => books.id),
-  volumeId: uuid("volume_id")
-    .notNull()
-    .references(() => volumes.id),
-  title: text("title").notNull(),
-  content: text("content").notNull(),
-  chapterNumber: integer("chapter_number").notNull(),
-  isPublished: boolean("is_published").default(false),
-  publishDate: timestamp("publish_date"),
-  createdAt: timestamp("created_at").defaultNow(),
-  updatedAt: timestamp("updated_at").defaultNow(),
-});
+export const chapters = pgTable(
+  "chapters",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    bookId: uuid("book_id")
+      .notNull()
+      .references(() => books.id, { onDelete: "cascade" }),
+    volumeId: uuid("volume_id")
+      .notNull()
+      .references(() => volumes.id, { onDelete: "cascade" }),
+    title: text("title").notNull(),
+    content: text("content").notNull(),
+    chapterNumber: integer("chapter_number").notNull(),
+    isPublished: boolean("is_published").default(false),
+    publishDate: timestamp("publish_date"),
+    createdAt: timestamp("created_at").defaultNow(),
+    updatedAt: timestamp("updated_at").defaultNow(),
+  },
+  (table) => [
+    index("chapter_title_idx").on(table.title),
+    index("chapter_bookId_idx").on(table.bookId),
+    index("chapter_number_idx").on(table.chapterNumber),
+    index("chapter_isPublish_idx").on(table.isPublished),
+    index("chapter_publishDate_idx").on(table.publishDate),
+    index("chapter_title_bookId_idx").on(table.bookId, table.title),
+    index("chapter_volumeId_title_idx").on(table.volumeId, table.title),
+    index("chapter_all_idx").on(
+      table.bookId,
+      table.volumeId,
+      table.isPublished,
+      table.publishDate,
+      table.title
+    ),
+  ]
+);
 
 // Notices Table
-export const notices = pgTable("notices", {
-  id: uuid("id").primaryKey().defaultRandom(),
-  title: text("title").notNull(),
-  content: text("content").notNull(),
-  isPublished: boolean("is_published").default(false),
-  createdAt: timestamp("created_at").defaultNow(),
-});
+export const notices = pgTable(
+  "notices",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    title: text("title").notNull(),
+    content: text("content").notNull(),
+    isPublished: boolean("is_published").default(false),
+    createdAt: timestamp("created_at").defaultNow(),
+  },
+  (table) => [
+    index("notice_isPublish_idx").on(table.isPublished),
+    index("notice_title_idx").on(table.title),
+    index("notice_createdAt_idx").on(table.createdAt),
+  ]
+);
 
 // Refresh token table
 export const refreshTokens = pgTable("refresh_tokens", {
   id: uuid("id").defaultRandom().primaryKey(),
   userId: uuid("user_id")
     .notNull()
-    .references(() => users.id),
+    .references(() => users.id, { onDelete: "cascade" }),
   token: text("token").notNull(),
   expiresAt: timestamp("expires_at").notNull(),
   createdAt: timestamp("created_at").defaultNow(),
