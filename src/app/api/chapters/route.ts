@@ -61,7 +61,6 @@ export async function POST(req: Request) {
     if (
       !title ||
       !content ||
-      !isPublished ||
       !bookId ||
       !volumeId ||
       (isPublished && !publishDate)
@@ -109,7 +108,7 @@ export async function POST(req: Request) {
         volumeId,
         isPublished,
         chapterNumber,
-        publishDate,
+        publishDate: publishDate ? new Date(publishDate) : new Date(),
       })
       .returning();
 

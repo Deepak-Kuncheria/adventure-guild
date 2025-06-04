@@ -49,7 +49,6 @@ export async function PUT(
       { key: "title", type: "string" },
       { key: "content", type: "string" },
       { key: "isPublished", type: "boolean" },
-      { key: "publishDate", type: "string" },
     ];
     for (let i = 0; i < allowedFields.length; i++) {
       if (
@@ -57,14 +56,24 @@ export async function PUT(
         typeof body[allowedFields[i].key] === allowedFields[i].type
       ) {
         const key = allowedFields[i].key;
-        if (key === "publishDate" && !isValidTimestamp(body[key])) {
-          return new Response(CHAPTER_INCORRECT_PUBLISH_DATE, { status: 400 });
-        }
         updateData[key] = body[key];
       }
     }
     if (Object.keys(updateData).length === 0)
       return new Response(CHAPTER_UPDATE_REQ_PARAMS, { status: 400 });
+
+    if (updateData.isPublished) {
+      if (
+        !("publishDate" in body) ||
+        ("publishDate" in body &&
+          body.publishDate &&
+          !isValidTimestamp(body.publishDate))
+      ) {
+        return new Response(CHAPTER_INCORRECT_PUBLISH_DATE, { status: 400 });
+      } else if ("publishDate" in body) {
+        updateData["publishDate"] = new Date(body.publishDate);
+      }
+    }
     const updatedChapter = await db
       .update(chapters)
       .set(updateData)
