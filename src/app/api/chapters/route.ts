@@ -1,4 +1,3 @@
-import { ACCESS_DENIED } from "@/constants/errors/authErrors";
 import {
   CHAPTER_BOOK_NOT_FOUND,
   CHAPTER_INCORRECT_PUBLISH_DATE,
@@ -7,28 +6,14 @@ import {
 } from "@/constants/errors/chapterErrors";
 import { SERVER_ERROR } from "@/constants/errors/commonErrors";
 import { db } from "@/db";
-import { books, chapters, USER_ROLE_CONSTANT, volumes } from "@/db/schema";
-import { decodeAccessTokenForAPI } from "@/utils/forAuthTokens";
+import { books, chapters, volumes } from "@/db/schema";
+import { checkAuthorRole } from "@/utils/authorize";
 import { isValidTimestamp } from "@/utils/forTimestamps";
-import { getUserRoleById } from "@/utils/usersDB";
 import { and, count, eq } from "drizzle-orm";
 
 export async function GET() {
   try {
-    let isAdmin = false;
-    //  find whether user is admin or not
-    const decodedToken = await decodeAccessTokenForAPI();
-    if (
-      decodedToken &&
-      Object.keys(decodedToken).length > 0 &&
-      "userId" in decodedToken
-    ) {
-      const userRole = await getUserRoleById(decodedToken?.userId as string);
-      if (userRole && userRole === USER_ROLE_CONSTANT.AUTHOR) {
-        isAdmin = true;
-      }
-    }
-
+    const isAdmin = await checkAuthorRole();
     let allChapters;
     const aChapter = {
       title: chapters.title,
@@ -37,7 +22,7 @@ export async function GET() {
       chapterNumber: chapters.chapterNumber,
       bookId: chapters.bookId,
     };
-    if (isAdmin) {
+    if (isAdmin.status) {
       allChapters = await db.select(aChapter).from(chapters);
     } else {
       // for non admin users, show only published books.
@@ -68,14 +53,11 @@ export async function POST(req: Request) {
       return Response.json({ error: CHAPTER_REQ_PARAMS }, { status: 400 });
     }
 
-    const decodedToken = await decodeAccessTokenForAPI();
-    if (!decodedToken) {
-      return Response.json({ error: ACCESS_DENIED }, { status: 401 });
+    const author = await checkAuthorRole();
+    if (!author.status) {
+      return author.response;
     }
-    const role = await getUserRoleById(decodedToken.userId);
-    if (role !== USER_ROLE_CONSTANT.AUTHOR) {
-      return Response.json({ error: ACCESS_DENIED }, { status: 403 });
-    }
+
     if (isPublished && !isValidTimestamp(publishDate)) {
       return Response.json(
         { error: CHAPTER_INCORRECT_PUBLISH_DATE },

@@ -1,4 +1,3 @@
-import { ACCESS_DENIED } from "@/constants/errors/authErrors";
 import { BOOK_TITLE_EMPTY } from "@/constants/errors/bookErrors";
 import { SERVER_ERROR } from "@/constants/errors/commonErrors";
 import {
@@ -7,9 +6,8 @@ import {
   VOLUME_RELEVANT_PARAMS,
 } from "@/constants/errors/volumeErrors";
 import { db } from "@/db";
-import { USER_ROLE_CONSTANT, volumes } from "@/db/schema";
-import { decodeAccessTokenForAPI } from "@/utils/forAuthTokens";
-import { getUserRoleById } from "@/utils/usersDB";
+import { volumes } from "@/db/schema";
+import { checkAuthorRole } from "@/utils/authorize";
 import { eq } from "drizzle-orm";
 import { validate as uuidValidate } from "uuid";
 
@@ -28,14 +26,11 @@ export async function PUT(
     if (!volumeId || !uuidValidate(volumeId)) {
       return Response.json({ error: VOLUME_ID_IS_REQ }, { status: 400 });
     }
-    const decodedToken = await decodeAccessTokenForAPI();
-    if (!decodedToken) {
-      return Response.json({ error: ACCESS_DENIED }, { status: 401 });
+    const author = await checkAuthorRole();
+    if (!author.status) {
+      return author.response;
     }
-    const role = await getUserRoleById(decodedToken.userId);
-    if (role !== USER_ROLE_CONSTANT.AUTHOR) {
-      return Response.json({ error: ACCESS_DENIED }, { status: 403 });
-    }
+
     const updateData: {
       [key: string]: string | boolean | undefined;
       title?: string;
@@ -83,13 +78,9 @@ export async function DELETE(
       return Response.json({ error: VOLUME_ID_IS_REQ }, { status: 400 });
     }
 
-    const decodedToken = await decodeAccessTokenForAPI();
-    if (!decodedToken) {
-      return Response.json({ error: ACCESS_DENIED }, { status: 401 });
-    }
-    const role = await getUserRoleById(decodedToken.userId);
-    if (role !== USER_ROLE_CONSTANT.AUTHOR) {
-      return Response.json({ error: ACCESS_DENIED }, { status: 403 });
+    const author = await checkAuthorRole();
+    if (!author.status) {
+      return author.response;
     }
 
     const deletedVol = await db

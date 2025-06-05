@@ -1,4 +1,3 @@
-import { ACCESS_DENIED } from "@/constants/errors/authErrors";
 import {
   CHAPTER_ID_REQ,
   CHAPTER_INCORRECT_PUBLISH_DATE,
@@ -8,10 +7,9 @@ import {
 } from "@/constants/errors/chapterErrors";
 import { SERVER_ERROR } from "@/constants/errors/commonErrors";
 import { db } from "@/db";
-import { chapters, USER_ROLE_CONSTANT } from "@/db/schema";
-import { decodeAccessTokenForAPI } from "@/utils/forAuthTokens";
+import { chapters } from "@/db/schema";
+import { checkAuthorRole } from "@/utils/authorize";
 import { isValidTimestamp } from "@/utils/forTimestamps";
-import { getUserRoleById } from "@/utils/usersDB";
 import { eq } from "drizzle-orm";
 import { validate as uuidValidate } from "uuid";
 
@@ -30,13 +28,9 @@ export async function PUT(
     if (!chapterId || !uuidValidate(chapterId)) {
       return Response.json({ error: CHAPTER_ID_REQ }, { status: 400 });
     }
-    const decodedToken = await decodeAccessTokenForAPI();
-    if (!decodedToken) {
-      return Response.json({ error: ACCESS_DENIED }, { status: 401 });
-    }
-    const role = await getUserRoleById(decodedToken.userId);
-    if (role !== USER_ROLE_CONSTANT.AUTHOR) {
-      return Response.json({ error: ACCESS_DENIED }, { status: 403 });
+    const author = await checkAuthorRole();
+    if (!author.status) {
+      return author.response;
     }
     const updateData: {
       [key: string]: string | boolean | Date | undefined;
@@ -108,13 +102,9 @@ export async function DELETE(
       return Response.json({ error: CHAPTER_ID_REQ }, { status: 400 });
     }
 
-    const decodedToken = await decodeAccessTokenForAPI();
-    if (!decodedToken) {
-      return Response.json({ error: ACCESS_DENIED }, { status: 401 });
-    }
-    const role = await getUserRoleById(decodedToken.userId);
-    if (role !== USER_ROLE_CONSTANT.AUTHOR) {
-      return Response.json({ error: ACCESS_DENIED }, { status: 403 });
+    const author = await checkAuthorRole();
+    if (!author.status) {
+      return author.response;
     }
 
     const deletedChapter = await db

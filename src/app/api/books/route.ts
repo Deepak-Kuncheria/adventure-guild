@@ -1,30 +1,16 @@
-import { ACCESS_DENIED } from "@/constants/errors/authErrors";
 import { BOOK_TITLE_REQ } from "@/constants/errors/bookErrors";
 import { SERVER_ERROR } from "@/constants/errors/commonErrors";
 import { db } from "@/db";
-import { books, USER_ROLE_CONSTANT } from "@/db/schema";
-import { decodeAccessTokenForAPI } from "@/utils/forAuthTokens";
-import { getUserRoleById } from "@/utils/usersDB";
+import { books } from "@/db/schema";
+import { checkAuthorRole } from "@/utils/authorize";
 import { eq } from "drizzle-orm";
 
 export async function GET() {
   try {
-    let isAdmin = false;
-    //  find whether user is admin or not
-    const decodedToken = await decodeAccessTokenForAPI();
-    if (
-      decodedToken &&
-      Object.keys(decodedToken).length > 0 &&
-      "userId" in decodedToken
-    ) {
-      const userRole = await getUserRoleById(decodedToken?.userId as string);
-      if (userRole && userRole === USER_ROLE_CONSTANT.AUTHOR) {
-        isAdmin = true;
-      }
-    }
+    const isAdmin = await checkAuthorRole();
 
     let allBooks;
-    if (isAdmin) {
+    if (isAdmin.status) {
       allBooks = await db.select().from(books);
     } else {
       // for non admin users, show only published books.
@@ -47,13 +33,9 @@ export async function POST(req: Request) {
     if (!title) {
       return Response.json({ error: BOOK_TITLE_REQ }, { status: 400 });
     }
-    const decodedToken = await decodeAccessTokenForAPI();
-    if (!decodedToken) {
-      return Response.json({ error: ACCESS_DENIED }, { status: 401 });
-    }
-    const role = await getUserRoleById(decodedToken.userId);
-    if (role !== USER_ROLE_CONSTANT.AUTHOR) {
-      return Response.json({ error: ACCESS_DENIED }, { status: 403 });
+    const author = await checkAuthorRole();
+    if (!author.status) {
+      return author.response;
     }
     const newBook = await db
       .insert(books)
@@ -61,7 +43,7 @@ export async function POST(req: Request) {
         title,
         description,
         coverImageUrl,
-        authorId: decodedToken.userId,
+        authorId: author.userId,
       })
       .returning();
 
