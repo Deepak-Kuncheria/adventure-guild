@@ -39,7 +39,7 @@ test.describe("Test /api/refresh", () => {
 
     expect(res.status()).toBe(200);
     const json = await res.json();
-    expect(json).toHaveProperty("accessToken");
+    expect(json).toHaveProperty("data");
   });
 
   test("returns 401 if cookie is missing", async ({ request }) => {

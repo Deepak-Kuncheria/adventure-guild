@@ -18,9 +18,12 @@ export async function POST() {
     const refreshToken = cookieStore.get(cookieLabels.FOR_REFRESH_TOKEN);
 
     if (!refreshToken) {
-      return new Response(REFRESH_TOKEN_NOT_FOUND, {
-        status: 401,
-      });
+      return Response.json(
+        { error: REFRESH_TOKEN_NOT_FOUND },
+        {
+          status: 401,
+        }
+      );
     }
     let payload: JwtPayload;
     try {
@@ -31,21 +34,24 @@ export async function POST() {
     } catch (err) {
       // log error???
       console.error(err);
-      return new Response(INVALID_REFRESH_TOKEN, { status: 403 });
+      return Response.json({ error: INVALID_REFRESH_TOKEN }, { status: 403 });
     }
     const [dbToken] = await db
       .select()
       .from(refreshTokens)
       .where(eq(refreshTokens.token, refreshToken.value));
     if (!dbToken) {
-      return new Response(REFRESH_TOKEN_NOT_FOUND, {
-        status: 403,
-      });
+      return Response.json(
+        { error: REFRESH_TOKEN_NOT_FOUND },
+        {
+          status: 403,
+        }
+      );
     }
     const accessToken = generateAccessToken(payload.userId);
-    return Response.json({ accessToken });
+    return Response.json({ data: accessToken }, { status: 200 });
   } catch (err) {
     console.error(err);
-    return new Response(SERVER_ERROR, { status: 500 });
+    return Response.json({ error: SERVER_ERROR }, { status: 500 });
   }
 }
