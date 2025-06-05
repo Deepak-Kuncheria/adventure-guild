@@ -19,7 +19,7 @@ export async function POST(req: Request) {
     const { email, password, username } = await req.json();
 
     if (!email || !password) {
-      return new Response(EMAIL_PASSWORD_REQ, { status: 400 });
+      return Response.json({ error: EMAIL_PASSWORD_REQ }, { status: 400 });
     }
 
     // Check if user already exists
@@ -28,7 +28,7 @@ export async function POST(req: Request) {
       .from(users)
       .where(eq(users.email, email));
     if (existingUser.length > 0) {
-      return new Response(ACCOUNT_EXISTS, { status: 409 });
+      return Response.json({ error: ACCOUNT_EXISTS }, { status: 409 });
     }
 
     // Hash the password
@@ -47,9 +47,9 @@ export async function POST(req: Request) {
 
     await insertAndSetRT(newUser.id, refreshToken);
 
-    return Response.json({ accessToken });
+    return Response.json({ data: accessToken }, { status: 200 });
   } catch (error) {
     console.error(error);
-    return new Response(SERVER_ERROR, { status: 500 });
+    return Response.json({ error: SERVER_ERROR }, { status: 500 });
   }
 }

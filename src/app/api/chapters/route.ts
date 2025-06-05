@@ -1,4 +1,3 @@
-import { ACCESS_DENIED } from "@/constants/errors/authErrors";
 import {
   CHAPTER_BOOK_NOT_FOUND,
   CHAPTER_INCORRECT_PUBLISH_DATE,
@@ -7,28 +6,14 @@ import {
 } from "@/constants/errors/chapterErrors";
 import { SERVER_ERROR } from "@/constants/errors/commonErrors";
 import { db } from "@/db";
-import { books, chapters, USER_ROLE_CONSTANT, volumes } from "@/db/schema";
-import { decodeAccessTokenForAPI } from "@/utils/forAuthTokens";
+import { books, chapters, volumes } from "@/db/schema";
+import { checkAuthorRole } from "@/utils/authorize";
 import { isValidTimestamp } from "@/utils/forTimestamps";
-import { getUserRoleById } from "@/utils/usersDB";
 import { and, count, eq } from "drizzle-orm";
 
 export async function GET() {
   try {
-    let isAdmin = false;
-    //  find whether user is admin or not
-    const decodedToken = await decodeAccessTokenForAPI();
-    if (
-      decodedToken &&
-      Object.keys(decodedToken).length > 0 &&
-      "userId" in decodedToken
-    ) {
-      const userRole = await getUserRoleById(decodedToken?.userId as string);
-      if (userRole && userRole === USER_ROLE_CONSTANT.AUTHOR) {
-        isAdmin = true;
-      }
-    }
-
+    const isAdmin = await checkAuthorRole();
     let allChapters;
     const aChapter = {
       title: chapters.title,
@@ -37,7 +22,7 @@ export async function GET() {
       chapterNumber: chapters.chapterNumber,
       bookId: chapters.bookId,
     };
-    if (isAdmin) {
+    if (isAdmin.status) {
       allChapters = await db.select(aChapter).from(chapters);
     } else {
       // for non admin users, show only published books.
@@ -46,10 +31,10 @@ export async function GET() {
         .from(chapters)
         .where(eq(chapters.isPublished, true));
     }
-    return Response.json({ chapters: allChapters }, { status: 200 });
+    return Response.json({ data: allChapters }, { status: 200 });
   } catch (err) {
     console.error(err);
-    return new Response(SERVER_ERROR, { status: 500 });
+    return Response.json({ error: SERVER_ERROR }, { status: 500 });
   }
 }
 
@@ -65,33 +50,36 @@ export async function POST(req: Request) {
       !volumeId ||
       (isPublished && !publishDate)
     ) {
-      return new Response(CHAPTER_REQ_PARAMS, { status: 400 });
+      return Response.json({ error: CHAPTER_REQ_PARAMS }, { status: 400 });
     }
 
-    const decodedToken = await decodeAccessTokenForAPI();
-    if (!decodedToken) {
-      return new Response(ACCESS_DENIED, { status: 401 });
+    const author = await checkAuthorRole();
+    if (!author.status) {
+      return author.response;
     }
-    const role = await getUserRoleById(decodedToken.userId);
-    if (role !== USER_ROLE_CONSTANT.AUTHOR) {
-      return new Response(ACCESS_DENIED, { status: 403 });
-    }
+
     if (isPublished && !isValidTimestamp(publishDate)) {
-      return new Response(CHAPTER_INCORRECT_PUBLISH_DATE, { status: 400 });
+      return Response.json(
+        { error: CHAPTER_INCORRECT_PUBLISH_DATE },
+        { status: 400 }
+      );
     }
     const book = await db
       .select({ id: books.id })
       .from(books)
       .where(eq(books.id, bookId));
     if (book.length === 0) {
-      return new Response(CHAPTER_BOOK_NOT_FOUND, { status: 404 });
+      return Response.json({ error: CHAPTER_BOOK_NOT_FOUND }, { status: 404 });
     }
     const volume = await db
       .select({ id: volumes.id })
       .from(volumes)
       .where(and(eq(volumes.id, volumeId), eq(volumes.bookId, bookId)));
     if (volume.length === 0) {
-      return new Response(CHAPTER_VOLUME_NOT_FOUND, { status: 404 });
+      return Response.json(
+        { error: CHAPTER_VOLUME_NOT_FOUND },
+        { status: 404 }
+      );
     }
     const currentChapters = await db
       .select({ count: count() })
@@ -115,6 +103,6 @@ export async function POST(req: Request) {
     return Response.json({ data: newChapter[0] }, { status: 200 });
   } catch (error) {
     console.error(error);
-    return new Response(SERVER_ERROR, { status: 500 });
+    return Response.json({ error: SERVER_ERROR }, { status: 500 });
   }
 }

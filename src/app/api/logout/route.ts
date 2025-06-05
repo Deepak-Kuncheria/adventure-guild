@@ -19,9 +19,9 @@ export async function DELETE() {
 
       cookieStore.delete(cookieLabels.FOR_REFRESH_TOKEN);
     }
-    return new Response(LOG_OUT, { status: 200 });
+    return Response.json({ data: LOG_OUT }, { status: 200 });
   } catch (err) {
     console.error(err);
-    return new Response(SERVER_ERROR, { status: 500 });
+    return Response.json({ error: SERVER_ERROR }, { status: 500 });
   }
 }
