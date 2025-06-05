@@ -23,18 +23,18 @@ export async function PUT(
     try {
       body = await req.json();
     } catch {
-      return new Response(BOOK_PARAMS_RELEVANT, { status: 400 });
+      return Response.json({ error: BOOK_PARAMS_RELEVANT }, { status: 400 });
     }
     if (!bookId || !uuidValidate(bookId)) {
-      return new Response(BOOK_ID_REQ, { status: 400 });
+      return Response.json({ error: BOOK_ID_REQ }, { status: 400 });
     }
     const decodedToken = await decodeAccessTokenForAPI();
     if (!decodedToken) {
-      return new Response(ACCESS_DENIED, { status: 401 });
+      return Response.json({ error: ACCESS_DENIED }, { status: 401 });
     }
     const role = await getUserRoleById(decodedToken.userId);
     if (role !== USER_ROLE_CONSTANT.AUTHOR) {
-      return new Response(ACCESS_DENIED, { status: 403 });
+      return Response.json({ error: ACCESS_DENIED }, { status: 403 });
     }
     const updateData: {
       [key: string]: string | boolean | undefined;
@@ -56,24 +56,24 @@ export async function PUT(
       ) {
         const key = allowedFields[i].key;
         if (i === 0 && body[key].trim() === "") {
-          return new Response(BOOK_TITLE_EMPTY, { status: 400 });
+          return Response.json({ error: BOOK_TITLE_EMPTY }, { status: 400 });
         }
         updateData[key] = body[key];
       }
     }
     if (Object.keys(updateData).length === 0)
-      return new Response(BOOK_PARAMS_RELEVANT, { status: 400 });
+      return Response.json({ error: BOOK_PARAMS_RELEVANT }, { status: 400 });
     const updatedBook = await db
       .update(books)
       .set(updateData)
       .where(eq(books.id, bookId))
       .returning();
     if (updatedBook.length === 0)
-      return new Response(BOOK_NOT_FOUND, { status: 404 });
+      return Response.json({ error: BOOK_NOT_FOUND }, { status: 404 });
     return Response.json({ data: updatedBook[0] }, { status: 200 });
   } catch (error) {
     console.error(error);
-    return new Response(SERVER_ERROR, { status: 500 });
+    return Response.json({ error: SERVER_ERROR }, { status: 500 });
   }
 }
 
@@ -88,16 +88,16 @@ export async function DELETE(
   try {
     const { bookId } = await params;
     if (!bookId || !uuidValidate(bookId)) {
-      return new Response(BOOK_ID_REQ, { status: 400 });
+      return Response.json({ error: BOOK_ID_REQ }, { status: 400 });
     }
 
     const decodedToken = await decodeAccessTokenForAPI();
     if (!decodedToken) {
-      return new Response(ACCESS_DENIED, { status: 401 });
+      return Response.json({ error: ACCESS_DENIED }, { status: 401 });
     }
     const role = await getUserRoleById(decodedToken.userId);
     if (role !== USER_ROLE_CONSTANT.AUTHOR) {
-      return new Response(ACCESS_DENIED, { status: 403 });
+      return Response.json({ error: ACCESS_DENIED }, { status: 403 });
     }
 
     const deletedBook = await db
@@ -105,13 +105,13 @@ export async function DELETE(
       .where(eq(books.id, bookId))
       .returning({ deletedTitle: books.title });
     if (deletedBook.length === 0)
-      return new Response(BOOK_NOT_FOUND, { status: 404 });
+      return Response.json({ error: BOOK_NOT_FOUND }, { status: 404 });
     return Response.json(
       { data: deletedBook[0].deletedTitle },
       { status: 200 }
     );
   } catch (error) {
     console.error(error);
-    return new Response(SERVER_ERROR, { status: 500 });
+    return Response.json({ error: SERVER_ERROR }, { status: 500 });
   }
 }

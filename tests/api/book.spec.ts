@@ -29,8 +29,8 @@ test.describe("Testing books api", async () => {
     const res = await request.get(`/api/books`);
     expect(res.status()).toBe(200);
     const body = await res.json();
-    expect(Array.isArray(body.books)).toBe(true);
-    for (const book of body.books) {
+    expect(Array.isArray(body.data)).toBe(true);
+    for (const book of body.data) {
       expect(book.isPublished).toBe(true);
     }
   });
@@ -42,7 +42,7 @@ test.describe("Testing books api", async () => {
     });
     expect(res.status()).toBe(200);
     const body = await res.json();
-    expect(Array.isArray(body.books)).toBe(true);
+    expect(Array.isArray(body.data)).toBe(true);
   });
   test.describe("POST books API", () => {
     test("Create a new book by author", async ({ request }) => {

@@ -33,10 +33,10 @@ export async function GET() {
         .from(books)
         .where(eq(books.isPublished, true));
     }
-    return Response.json({ books: allBooks }, { status: 200 });
+    return Response.json({ data: allBooks }, { status: 200 });
   } catch (err) {
     console.error(err);
-    return new Response(SERVER_ERROR, { status: 500 });
+    return Response.json({ error: SERVER_ERROR }, { status: 500 });
   }
 }
 
@@ -45,15 +45,15 @@ export async function POST(req: Request) {
     const { title, description, coverImageUrl } = await req.json();
 
     if (!title) {
-      return new Response(BOOK_TITLE_REQ, { status: 400 });
+      return Response.json({ error: BOOK_TITLE_REQ }, { status: 400 });
     }
     const decodedToken = await decodeAccessTokenForAPI();
     if (!decodedToken) {
-      return new Response(ACCESS_DENIED, { status: 401 });
+      return Response.json({ error: ACCESS_DENIED }, { status: 401 });
     }
     const role = await getUserRoleById(decodedToken.userId);
     if (role !== USER_ROLE_CONSTANT.AUTHOR) {
-      return new Response(ACCESS_DENIED, { status: 403 });
+      return Response.json({ error: ACCESS_DENIED }, { status: 403 });
     }
     const newBook = await db
       .insert(books)
@@ -68,6 +68,6 @@ export async function POST(req: Request) {
     return Response.json({ data: newBook[0] }, { status: 200 });
   } catch (error) {
     console.error(error);
-    return new Response(SERVER_ERROR, { status: 500 });
+    return Response.json({ error: SERVER_ERROR }, { status: 500 });
   }
 }
