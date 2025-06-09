@@ -16,25 +16,10 @@ export async function GET(
       );
     }
     const author = await checkAuthorRole();
-    const searchLimit = 5;
-    const bookResults = await searchInTable(
-      books,
-      author.status,
-      item,
-      searchLimit
-    );
-    const volumeResults = await searchInTable(
-      volumes,
-      author.status,
-      item,
-      searchLimit
-    );
-    const chapterRes = await searchInTable(
-      chapters,
-      author.status,
-      item,
-      searchLimit
-    );
+
+    const bookResults = await searchInTable(books, author.status, item);
+    const volumeResults = await searchInTable(volumes, author.status, item);
+    const chapterRes = await searchInTable(chapters, author.status, item);
 
     return Response.json(
       {
