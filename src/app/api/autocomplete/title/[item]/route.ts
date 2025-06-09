@@ -1,4 +1,5 @@
 import { SERVER_ERROR } from "@/constants/errors/commonErrors";
+import { SEARCH_TERM_EMPTY } from "@/constants/errors/searchErrors";
 import { books, chapters, volumes } from "@/db/schema";
 import { checkAuthorRole } from "@/utils/authorize";
 import { searchInTable } from "@/utils/forSearch";
@@ -10,37 +11,25 @@ export async function GET(
   try {
     const { item } = await params;
     if (item.trim() === "") {
-      return Response.json(
-        { error: "The search item is empty" },
-        { status: 400 }
-      );
+      return Response.json({ error: SEARCH_TERM_EMPTY }, { status: 400 });
     }
     const author = await checkAuthorRole();
-    const searchLimit = 5;
-    const bookResults = await searchInTable(
-      books,
-      author.status,
-      item,
-      searchLimit
+    const searchLimit = 3;
+    const tables = [books, volumes, chapters];
+    const allResults = await Promise.all(
+      tables.map((table) =>
+        searchInTable(table, author.status, item, searchLimit)
+      )
     );
-    const volumeResults = await searchInTable(
-      volumes,
-      author.status,
-      item,
-      searchLimit
-    );
-    const chapterRes = await searchInTable(
-      chapters,
-      author.status,
-      item,
-      searchLimit
-    );
-    // change the below data response for autocomplete
-    const results = [...bookResults, ...volumeResults, ...chapterRes];
-    results.sort((a, b) => b.rankCd - a.rankCd);
+
+    const results = allResults
+      .flat()
+      .sort((a, b) => b.rankCd - a.rankCd)
+      .slice(0, 5);
+
     return Response.json(
       {
-        data: results.slice(0, 5),
+        data: results,
       },
       { status: 200 }
     );

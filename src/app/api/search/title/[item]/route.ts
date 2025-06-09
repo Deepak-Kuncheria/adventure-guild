@@ -1,4 +1,5 @@
 import { SERVER_ERROR } from "@/constants/errors/commonErrors";
+import { SEARCH_TERM_EMPTY } from "@/constants/errors/searchErrors";
 import { books, chapters, volumes } from "@/db/schema";
 import { checkAuthorRole } from "@/utils/authorize";
 import { searchInTable } from "@/utils/forSearch";
@@ -10,10 +11,7 @@ export async function GET(
   try {
     const { item } = await params;
     if (item.trim() === "") {
-      return Response.json(
-        { error: "The search item is empty" },
-        { status: 400 }
-      );
+      return Response.json({ error: SEARCH_TERM_EMPTY }, { status: 400 });
     }
     const author = await checkAuthorRole();
 
