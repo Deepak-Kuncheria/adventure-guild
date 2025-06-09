@@ -13,9 +13,13 @@ async function searchInTable(
 ) {
   const whereClause =
     isAuthor || !("isPublished" in tableToSearch)
-      ? sql`setweight(to_tsvector('english', ${tableToSearch.title}), 'A') @@ to_tsquery('english', ${searchItem})`
+      ? sql`setweight(to_tsvector('english', ${
+          tableToSearch.title
+        }), 'A') @@ to_tsquery('english', ${searchItem + ":*"})`
       : and(
-          sql`setweight(to_tsvector('english', ${tableToSearch.title}), 'A') @@ to_tsquery('english', ${searchItem})`,
+          sql`setweight(to_tsvector('english', ${
+            tableToSearch.title
+          }), 'A') @@ to_tsquery('english', ${searchItem + ":*"})`,
           eq(tableToSearch.isPublished, true)
         );
   return db
