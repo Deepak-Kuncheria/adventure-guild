@@ -12,7 +12,14 @@ import {
   uniqueIndex,
   pgEnum,
   index,
+  customType,
 } from "drizzle-orm/pg-core";
+
+const tsvector = customType<{ data: string }>({
+  dataType() {
+    return "tsvector";
+  },
+});
 
 // First, define the enum
 export const userRoleEnum = pgEnum("user_role", ["reader", "author"]);
@@ -56,11 +63,17 @@ export const books = pgTable(
     isPublished: boolean("is_published").default(false),
     createdAt: timestamp("created_at").defaultNow(),
     updatedAt: timestamp("updated_at").defaultNow(),
+    titleSearch: tsvector("title_search")
+      .notNull()
+      .generatedAlwaysAs(
+        (): SQL => sql`to_tsvector('english', ${books.title})`
+      ),
   },
   (table) => [
     index("book_title_idx").on(table.title),
     index("book_isPublish_idx").on(table.isPublished),
     index("book_title_isPublish_idx").on(table.isPublished, table.title),
+    index("search_book_title_idx").using("gin", table.titleSearch),
   ]
 );
 
@@ -75,11 +88,18 @@ export const volumes = pgTable(
     title: text("title"),
     volumeNumber: integer("volume_number").notNull(),
     createdAt: timestamp("created_at").defaultNow(),
+    updatedAt: timestamp("updated_at").defaultNow(),
+    titleSearch: tsvector("title_search")
+      .notNull()
+      .generatedAlwaysAs(
+        (): SQL => sql`to_tsvector('english', ${volumes.title})`
+      ),
   },
   (table) => [
     index("volume_title_idx").on(table.title),
     index("volume_bookId_idx").on(table.bookId),
     index("volume_title_bookId_idx").on(table.bookId, table.title),
+    index("search_volume_title_idx").using("gin", table.titleSearch),
   ]
 );
 
@@ -101,6 +121,16 @@ export const chapters = pgTable(
     publishDate: timestamp("publish_date"),
     createdAt: timestamp("created_at").defaultNow(),
     updatedAt: timestamp("updated_at").defaultNow(),
+    titleSearch: tsvector("title_search")
+      .notNull()
+      .generatedAlwaysAs(
+        (): SQL => sql`to_tsvector('english', ${chapters.title})`
+      ),
+    contentSearch: tsvector("content_search")
+      .notNull()
+      .generatedAlwaysAs(
+        (): SQL => sql`to_tsvector('english', ${chapters.content})`
+      ),
   },
   (table) => [
     index("chapter_title_idx").on(table.title),
@@ -117,6 +147,8 @@ export const chapters = pgTable(
       table.publishDate,
       table.title
     ),
+    index("search_chapter_title_idx").using("gin", table.titleSearch),
+    index("search_chapter_content_idx").using("gin", table.contentSearch),
   ]
 );
 

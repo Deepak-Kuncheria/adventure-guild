@@ -5,22 +5,8 @@
     {
       "idx": 0,
       "version": "7",
-      "when": 1744727062987,
-      "tag": "0000_polite_norman_osborn",
-      "breakpoints": true
-    },
-    {
-      "idx": 1,
-      "version": "7",
-      "when": 1745235006524,
-      "tag": "0001_parched_james_howlett",
-      "breakpoints": true
-    },
-    {
-      "idx": 2,
-      "version": "7",
-      "when": 1748528238789,
-      "tag": "0002_ambitious_iron_fist",
+      "when": 1749217841544,
+      "tag": "0000_fair_caretaker",
       "breakpoints": true
     }
   ]
