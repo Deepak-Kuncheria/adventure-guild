@@ -1,6 +1,6 @@
 import { ACCESS_DENIED } from "@/constants/errors/authErrors";
 import { decodeAccessTokenForAPI } from "./forAuthTokens";
-import { getUserRoleById } from "./usersDB";
+import { getUserRoleById } from "./db/users";
 import { USER_ROLE_CONSTANT } from "@/db/schema";
 
 // find whether user has  author role from the access token sent via
