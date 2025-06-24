@@ -8,7 +8,9 @@ CREATE TABLE "books" (
 	"is_published" boolean DEFAULT false,
 	"created_at" timestamp DEFAULT now(),
 	"updated_at" timestamp DEFAULT now(),
-	"title_search" "tsvector" GENERATED ALWAYS AS (to_tsvector('english', "books"."title")) STORED NOT NULL
+	"title_search" "tsvector" GENERATED ALWAYS AS (to_tsvector('english', "books"."title")) STORED NOT NULL,
+	"slug" varchar(255) NOT NULL,
+	CONSTRAINT "books_slug_unique" UNIQUE("slug")
 );
 --> statement-breakpoint
 CREATE TABLE "chapters" (
@@ -70,6 +72,7 @@ CREATE INDEX "book_title_idx" ON "books" USING btree ("title");--> statement-bre
 CREATE INDEX "book_isPublish_idx" ON "books" USING btree ("is_published");--> statement-breakpoint
 CREATE INDEX "book_title_isPublish_idx" ON "books" USING btree ("is_published","title");--> statement-breakpoint
 CREATE INDEX "search_book_title_idx" ON "books" USING gin ("title_search");--> statement-breakpoint
+CREATE INDEX "books_slug_idx" ON "books" USING btree ("slug");--> statement-breakpoint
 CREATE INDEX "chapter_title_idx" ON "chapters" USING btree ("title");--> statement-breakpoint
 CREATE INDEX "chapter_bookId_idx" ON "chapters" USING btree ("book_id");--> statement-breakpoint
 CREATE INDEX "chapter_number_idx" ON "chapters" USING btree ("chapter_number");--> statement-breakpoint

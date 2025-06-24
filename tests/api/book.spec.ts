@@ -4,6 +4,7 @@ import { test, expect } from "@playwright/test";
 import { eq } from "drizzle-orm";
 import { generateAccessToken } from "@/utils/forAuthTokens";
 import { UUIDTypes } from "uuid";
+import { generateSlug } from "@/utils/slugs";
 
 test.describe("Testing books api", async () => {
   test.describe.configure({ mode: "serial" });
@@ -123,6 +124,7 @@ test.describe("Testing books api", async () => {
           description: "lorem ipsum",
           coverImageUrl: "",
           authorId: testUserId[0].id as string,
+          slug: generateSlug("insert a test slug!!"),
         })
         .returning({ id: books.id });
     });

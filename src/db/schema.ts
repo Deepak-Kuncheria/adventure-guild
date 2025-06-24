@@ -68,12 +68,14 @@ export const books = pgTable(
       .generatedAlwaysAs(
         (): SQL => sql`to_tsvector('english', ${books.title})`
       ),
+    slug: varchar("slug", { length: 255 }).notNull().unique(),
   },
   (table) => [
     index("book_title_idx").on(table.title),
     index("book_isPublish_idx").on(table.isPublished),
     index("book_title_isPublish_idx").on(table.isPublished, table.title),
     index("search_book_title_idx").using("gin", table.titleSearch),
+    index("books_slug_idx").on(table.slug),
   ]
 );
 
