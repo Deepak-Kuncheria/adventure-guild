@@ -2,12 +2,14 @@ import {
   BOOK_ID_REQ,
   BOOK_NOT_FOUND,
   BOOK_PARAMS_RELEVANT,
+  BOOK_SLUG_NOT_UNIQUE,
   BOOK_TITLE_EMPTY,
 } from "@/constants/errors/bookErrors";
 import { SERVER_ERROR } from "@/constants/errors/commonErrors";
 import { db } from "@/db";
 import { books } from "@/db/schema";
 import { checkAuthorRole } from "@/utils/authorize";
+import { findBookBySlug } from "@/utils/db/books";
 import { eq } from "drizzle-orm";
 import { validate as uuidValidate } from "uuid";
 
@@ -30,18 +32,21 @@ export async function PUT(
     if (!author.status) {
       return author.response;
     }
+
     const updateData: {
       [key: string]: string | boolean | undefined;
       title?: string;
       description?: string;
       coverImageUrl?: string;
       isPublished?: boolean;
+      slug?: string;
     } = {};
     const allowedFields = [
       { key: "title", type: "string" },
       { key: "description", type: "string" },
       { key: "coverImageUrl", type: "string" },
       { key: "isPublished", type: "boolean" },
+      { key: "slug", type: "string" },
     ];
     for (let i = 0; i < allowedFields.length; i++) {
       if (
@@ -51,6 +56,11 @@ export async function PUT(
         const key = allowedFields[i].key;
         if (i === 0 && body[key].trim() === "") {
           return Response.json({ error: BOOK_TITLE_EMPTY }, { status: 400 });
+        } else if (key === "slug" && (await findBookBySlug(body[key]))) {
+          return Response.json(
+            { error: BOOK_SLUG_NOT_UNIQUE },
+            { status: 400 }
+          );
         }
         updateData[key] = body[key];
       }
