@@ -1,7 +1,12 @@
 import slugify from "slugify";
 import { findBookBySlug } from "./db/books";
+import { MAX_SLUG_CHARACTER_LIMIT } from "@/constants/slugs";
 export function generateSlug(item: string) {
-  return slugify(item, { lower: true, strict: true, trim: true });
+  const newItem =
+    item.length > MAX_SLUG_CHARACTER_LIMIT
+      ? item.slice(0, MAX_SLUG_CHARACTER_LIMIT)
+      : item;
+  return slugify(newItem, { lower: true, strict: true, trim: true });
 }
 
 // For books: globally unique slugs
