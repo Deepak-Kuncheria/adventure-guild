@@ -31,16 +31,30 @@ export async function GET(
     if (book.length === 0)
       return Response.json({ error: BOOK_NOT_FOUND }, { status: 404 });
     const volumeIds = await db
-      .select({ id: volumes.id })
+      .select({
+        id: volumes.id,
+        title: volumes.title,
+        volumeNumber: volumes.volumeNumber,
+      })
       .from(volumes)
       .where(eq(volumes.bookId, book[0].id));
+
+    const volumesMap = Object.fromEntries(
+      volumeIds.map((vol) => [vol.id, vol])
+    );
 
     const chapterStatement = author.status
       ? eq(chapters.bookId, book[0].id)
       : and(eq(chapters.bookId, book[0].id), eq(chapters.isPublished, true));
 
     const chapterIds = await db
-      .select({ id: chapters.id })
+      .select({
+        id: chapters.id,
+        volumeId: chapters.volumeId,
+        chapterNumber: chapters.chapterNumber,
+        title: chapters.title,
+        publishDate: chapters.publishDate,
+      })
       .from(chapters)
       .where(chapterStatement);
 
@@ -48,7 +62,7 @@ export async function GET(
       {
         data: {
           book: book[0],
-          volumes: volumeIds,
+          volumes: volumesMap,
           chapters: chapterIds,
         },
       },
