@@ -84,7 +84,7 @@ export async function POST(req: Request) {
     const currentChapters = await db
       .select({ count: count() })
       .from(chapters)
-      .where(and(eq(chapters.bookId, bookId), eq(chapters.volumeId, volumeId)));
+      .where(eq(chapters.bookId, bookId));
     const chapterNumber = currentChapters[0].count + 1;
 
     const newChapter = await db
