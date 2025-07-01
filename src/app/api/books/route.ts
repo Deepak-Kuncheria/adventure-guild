@@ -1,8 +1,13 @@
-import { BOOK_TITLE_REQ } from "@/constants/errors/bookErrors";
+import {
+  BOOK_SLUG_NOT_UNIQUE,
+  BOOK_TITLE_REQ,
+} from "@/constants/errors/bookErrors";
 import { SERVER_ERROR } from "@/constants/errors/commonErrors";
 import { db } from "@/db";
 import { books } from "@/db/schema";
 import { checkAuthorRole } from "@/utils/authorize";
+import { findBookBySlug } from "@/utils/db/books";
+import { generateUniqueBookSlug } from "@/utils/slugs";
 import { eq } from "drizzle-orm";
 
 export async function GET() {
@@ -28,7 +33,7 @@ export async function GET() {
 
 export async function POST(req: Request) {
   try {
-    const { title, description, coverImageUrl } = await req.json();
+    const { title, description, coverImageUrl, slug } = await req.json();
 
     if (!title) {
       return Response.json({ error: BOOK_TITLE_REQ }, { status: 400 });
@@ -37,6 +42,17 @@ export async function POST(req: Request) {
     if (!author.status) {
       return author.response;
     }
+    let finalSlug = slug?.trim() || "";
+    if (finalSlug !== "") {
+      // check if slug is unique, if not unique send back an error response
+      const bookPresent = await findBookBySlug(slug);
+      if (bookPresent) {
+        return Response.json({ error: BOOK_SLUG_NOT_UNIQUE }, { status: 400 });
+      }
+    } else {
+      // generate new slug
+      finalSlug = await generateUniqueBookSlug(title);
+    }
     const newBook = await db
       .insert(books)
       .values({
@@ -44,6 +60,7 @@ export async function POST(req: Request) {
         description,
         coverImageUrl,
         authorId: author.userId,
+        slug: finalSlug,
       })
       .returning();
 

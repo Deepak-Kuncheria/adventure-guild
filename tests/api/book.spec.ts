@@ -4,6 +4,8 @@ import { test, expect } from "@playwright/test";
 import { eq } from "drizzle-orm";
 import { generateAccessToken } from "@/utils/forAuthTokens";
 import { UUIDTypes } from "uuid";
+import { generateSlug } from "@/utils/slugs";
+import { BOOK_SLUG_NOT_UNIQUE } from "@/constants/errors/bookErrors";
 
 test.describe("Testing books api", async () => {
   test.describe.configure({ mode: "serial" });
@@ -77,6 +79,32 @@ test.describe("Testing books api", async () => {
       });
       expect(res.status()).toBe(400);
     });
+    test("Return 400 when slug is not unique string", async ({ request }) => {
+      const example = {
+        title: "book test",
+        slug: "book-test",
+        description:
+          "lorem impsum lorem lorem impsum lorem lorem impsum loremlorem impsum loremlorem impsum loremlorem impsum loremlorem impsum loremlorem impsum lorem",
+      };
+      const res = await request.post("/api/books", {
+        headers: {
+          Authorization: `Bearer ${validToken}`,
+        },
+        data: example,
+      });
+      expect(res.status()).toBe(200);
+      const errorResp = await request.post("/api/books", {
+        headers: {
+          Authorization: `Bearer ${validToken}`,
+        },
+        data: example,
+      });
+      expect(errorResp.status()).toBe(400);
+      const body = await errorResp.json();
+      expect(body.error).toBe(BOOK_SLUG_NOT_UNIQUE);
+      const success = await res.json();
+      await db.delete(books).where(eq(books.id, success.data.id));
+    });
     test("Return 401 when access token is invalid", async ({ request }) => {
       const invalidToken = generateAccessToken("");
       const example = {
@@ -123,6 +151,7 @@ test.describe("Testing books api", async () => {
           description: "lorem ipsum",
           coverImageUrl: "",
           authorId: testUserId[0].id as string,
+          slug: generateSlug("insert a test slug!!"),
         })
         .returning({ id: books.id });
     });
@@ -134,6 +163,17 @@ test.describe("Testing books api", async () => {
       test("Return 400 when bookId param is empty", async ({ request }) => {
         const res = await request.put(`/api/books/null`);
         expect(res.status()).toBe(400);
+      });
+      test("Return 400 when new slug is not unique", async ({ request }) => {
+        const res = await request.put(`/api/books/${newBook[0]?.id}`, {
+          headers: {
+            Authorization: `Bearer ${validToken}`,
+          },
+          data: { slug: generateSlug("insert a test slug!!") },
+        });
+        expect(res.status()).toBe(400);
+        const body = await res.json();
+        expect(body.error).toBe(BOOK_SLUG_NOT_UNIQUE);
       });
       test("Return 401 when access token is invalid", async ({ request }) => {
         const invalidToken = generateAccessToken("");

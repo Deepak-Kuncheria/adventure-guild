@@ -6,7 +6,7 @@ import { eq } from "drizzle-orm";
 import { generateRefreshToken } from "@/utils/forAuthTokens";
 import cookieLabels from "@/constants/cookieLabels";
 
-const testUserId = "c68e6c17-f120-4320-b749-1d74b08f7245";
+const testUserId = "83f2467b-4e63-437f-9f0d-7b159e0ab668";
 
 test.describe("Test /api/refresh", () => {
   test.describe.configure({ mode: "serial" });
