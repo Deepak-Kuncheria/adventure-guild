@@ -1,0 +1,19 @@
+:root {
+  --background: #f4e8cf;
+  --foreground: #0f2012;
+  --btn-primary-text: #556b2f;
+  --highlight: #8b3a3a;
+  --accent-primary: #4a5d23;
+  --accent-secondary: #c2a349;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --background: #1f2b22;
+    --foreground: #e8e4d8;
+    --btn-primary-text: #a97142;
+    --highlight: #8b5e3c;
+    --accent-primary: #7a8450;
+    --accent-secondary: #bfa74a;
+  }
+}
