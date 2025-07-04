@@ -1,0 +1,26 @@
+.primaryHeader {
+  padding: 16px;
+}
+.primaryNavBar {
+  display: flex;
+  .containLogo {
+    max-width: 20%;
+    height: auto;
+  }
+  .navItems {
+    margin-left: auto;
+    display: flex;
+    align-items: center;
+    ul {
+      list-style-type: none;
+      display: flex;
+      li {
+        margin: 0 8px;
+      }
+    }
+    .searchBar {
+      margin: 0 0 0 8px;
+      height: fit-content;
+    }
+  }
+}
