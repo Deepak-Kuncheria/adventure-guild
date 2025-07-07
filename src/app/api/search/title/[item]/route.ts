@@ -3,7 +3,7 @@ import { SEARCH_TERM_EMPTY } from "@/constants/errors/searchErrors";
 import { searchTableEnum } from "@/constants/search/searchTableEnum";
 import { books, chapters, volumes } from "@/db/schema";
 import { checkAuthorRole } from "@/utils/authorize";
-import { searchInTable } from "@/utils/forSearch";
+import { addSlugToResult, searchInTable } from "@/utils/forSearch";
 
 export async function GET(
   req: Request,
@@ -35,12 +35,22 @@ export async function GET(
       searchTableEnum.CHAPTERS
     );
 
+    const bookResWithSlug = await Promise.all(
+      bookResults.map((res) => addSlugToResult(res))
+    );
+    const volumeResWithSlug = await Promise.all(
+      volumeResults.map((res) => addSlugToResult(res))
+    );
+    const chapterResWithSlug = await Promise.all(
+      chapterRes.map((res) => addSlugToResult(res))
+    );
+
     return Response.json(
       {
         data: {
-          books: bookResults,
-          volumes: volumeResults,
-          chapters: chapterRes,
+          books: bookResWithSlug,
+          volumes: volumeResWithSlug,
+          chapters: chapterResWithSlug,
         },
       },
       { status: 200 }
