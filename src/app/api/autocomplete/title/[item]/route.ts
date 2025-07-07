@@ -1,5 +1,6 @@
 import { SERVER_ERROR } from "@/constants/errors/commonErrors";
 import { SEARCH_TERM_EMPTY } from "@/constants/errors/searchErrors";
+import { searchTableEnum } from "@/constants/search/searchTableEnum";
 import { books, chapters, volumes } from "@/db/schema";
 import { checkAuthorRole } from "@/utils/authorize";
 import { searchInTable } from "@/utils/forSearch";
@@ -15,21 +16,36 @@ export async function GET(
     }
     const author = await checkAuthorRole();
     const searchLimit = 3;
-    const tables = [books, volumes, chapters];
-    const allResults = await Promise.all(
-      tables.map((table) =>
-        searchInTable(table, author.status, item, searchLimit)
-      )
-    );
 
-    const results = allResults
-      .flat()
-      .sort((a, b) => b.rankCd - a.rankCd)
-      .slice(0, 5);
+    const bookResults = await searchInTable(
+      books,
+      author.status,
+      item,
+      searchTableEnum.BOOKS,
+      searchLimit
+    );
+    const volumeResults = await searchInTable(
+      volumes,
+      author.status,
+      item,
+      searchTableEnum.VOLUMES,
+      searchLimit
+    );
+    const chapterResults = await searchInTable(
+      chapters,
+      author.status,
+      item,
+      searchTableEnum.CHAPTERS,
+      searchLimit
+    );
 
     return Response.json(
       {
-        data: results,
+        data: {
+          books: bookResults,
+          volumes: volumeResults,
+          chapters: chapterResults,
+        },
       },
       { status: 200 }
     );

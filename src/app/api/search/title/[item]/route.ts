@@ -1,5 +1,6 @@
 import { SERVER_ERROR } from "@/constants/errors/commonErrors";
 import { SEARCH_TERM_EMPTY } from "@/constants/errors/searchErrors";
+import { searchTableEnum } from "@/constants/search/searchTableEnum";
 import { books, chapters, volumes } from "@/db/schema";
 import { checkAuthorRole } from "@/utils/authorize";
 import { searchInTable } from "@/utils/forSearch";
@@ -15,9 +16,24 @@ export async function GET(
     }
     const author = await checkAuthorRole();
 
-    const bookResults = await searchInTable(books, author.status, item);
-    const volumeResults = await searchInTable(volumes, author.status, item);
-    const chapterRes = await searchInTable(chapters, author.status, item);
+    const bookResults = await searchInTable(
+      books,
+      author.status,
+      item,
+      searchTableEnum.BOOKS
+    );
+    const volumeResults = await searchInTable(
+      volumes,
+      author.status,
+      item,
+      searchTableEnum.VOLUMES
+    );
+    const chapterRes = await searchInTable(
+      chapters,
+      author.status,
+      item,
+      searchTableEnum.CHAPTERS
+    );
 
     return Response.json(
       {
