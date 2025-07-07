@@ -1,8 +1,9 @@
 import { SERVER_ERROR } from "@/constants/errors/commonErrors";
 import { SEARCH_TERM_EMPTY } from "@/constants/errors/searchErrors";
+import { searchTableEnum } from "@/constants/search/searchTableEnum";
 import { books, chapters, volumes } from "@/db/schema";
 import { checkAuthorRole } from "@/utils/authorize";
-import { searchInTable } from "@/utils/forSearch";
+import { addSlugToResult, searchInTable } from "@/utils/forSearch";
 
 export async function GET(
   req: Request,
@@ -15,21 +16,44 @@ export async function GET(
     }
     const author = await checkAuthorRole();
     const searchLimit = 3;
-    const tables = [books, volumes, chapters];
-    const allResults = await Promise.all(
-      tables.map((table) =>
-        searchInTable(table, author.status, item, searchLimit)
-      )
+
+    const bookResults = await searchInTable(
+      books,
+      author.status,
+      item,
+      searchTableEnum.BOOKS,
+      searchLimit
     );
-
-    const results = allResults
-      .flat()
-      .sort((a, b) => b.rankCd - a.rankCd)
-      .slice(0, 5);
-
+    const bookResWithSlug = await Promise.all(
+      bookResults.map((res) => addSlugToResult(res))
+    );
+    const volumeResults = await searchInTable(
+      volumes,
+      author.status,
+      item,
+      searchTableEnum.VOLUMES,
+      searchLimit
+    );
+    const volumeResWithSlug = await Promise.all(
+      volumeResults.map((res) => addSlugToResult(res))
+    );
+    const chapterResults = await searchInTable(
+      chapters,
+      author.status,
+      item,
+      searchTableEnum.CHAPTERS,
+      searchLimit
+    );
+    const chapterResWithSlug = await Promise.all(
+      chapterResults.map((res) => addSlugToResult(res))
+    );
     return Response.json(
       {
-        data: results,
+        data: {
+          books: bookResWithSlug,
+          volumes: volumeResWithSlug,
+          chapters: chapterResWithSlug,
+        },
       },
       { status: 200 }
     );
