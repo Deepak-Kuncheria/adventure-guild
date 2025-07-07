@@ -1,6 +1,6 @@
 import React from "react";
 import Image from "next/image";
-import guildLogo from "../../../../public/DAG-logo.png";
+import guildLogo from "../../../public/DAG-logo.png";
 interface MainLogoProps {
   width?: number;
   height?: number;

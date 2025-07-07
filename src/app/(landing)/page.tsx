@@ -1,4 +1,4 @@
-import PrimaryNavBar from "../components/navbars/Primary";
+import PrimaryNavBar from "../../components/navbars/Primary";
 
 export default function Home() {
   return (
