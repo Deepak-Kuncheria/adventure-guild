@@ -58,13 +58,6 @@ const PrimarySearchBar = () => {
           aria-label="search books, volumes or chapters"
         />
       </form>
-      {suggestions.length > 0 && (
-        <ul>
-          {suggestions.map((suggestion) => {
-            return <li key={suggestion.id}>{suggestion.title}</li>;
-          })}
-        </ul>
-      )}
     </>
   );
 };
