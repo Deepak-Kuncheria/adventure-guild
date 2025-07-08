@@ -2,9 +2,9 @@
   --background: #f4e8cf;
   --foreground: #0f2012;
   --btn-primary-text: #556b2f;
-  --highlight: #8b3a3a;
-  --accent-primary: #4a5d23;
-  --accent-secondary: #c2a349;
+  --highlight: #8b3a3a; // Accent for highlights or links
+  --accent-primary: #4a5d23; // Primary accent (e.g., headings, nav)
+  --accent-secondary: #c2a349; // Secondary accent (e.g., borders, icons)
 }
 
 @media (prefers-color-scheme: dark) {
