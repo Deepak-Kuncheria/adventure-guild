@@ -1,13 +1,18 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import { Playfair_Display, Lora, UnifrakturCook } from "next/font/google";
 import "@/styles/main.scss";
-const geistSans = Geist({
-  variable: "--font-geist-sans",
+const playfairDisplay = Playfair_Display({
+  variable: "--font-playfair-display",
   subsets: ["latin"],
 });
 
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
+const lora = Lora({
+  variable: "--font-lora",
+  subsets: ["latin"],
+});
+const unifrakturCook = UnifrakturCook({
+  variable: "--font-unifrakturCook",
+  weight: "700",
   subsets: ["latin"],
 });
 
@@ -23,7 +28,9 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body className={`${geistSans.variable} ${geistMono.variable}`}>
+      <body
+        className={`${playfairDisplay.variable} ${lora.variable} ${unifrakturCook.variable}`}
+      >
         {children}
       </body>
     </html>
