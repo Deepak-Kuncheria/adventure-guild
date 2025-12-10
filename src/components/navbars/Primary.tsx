@@ -31,15 +31,15 @@ const PrimaryNavBar = () => {
               <a href="/books">Books</a>
             </li>
           </ul>
-          <button
+          <div
             className="hamburger"
             aria-label="Toggle menu"
             onClick={() => setSidebarOpen(!isSidebarOpen)}
           >
-            {/* <HamburgerMenuIcon width={24} height={24} />
-             */}
-            Menu
-          </button>
+            <span></span>
+            <span></span>
+            <span></span>
+          </div>
         </nav>
       </header>
     </>

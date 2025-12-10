@@ -37,9 +37,19 @@
   }
   .primaryNavBar {
     justify-content: space-between;
+    align-items: center;
   }
   .primaryNavBar .hamburger {
-    display: block;
+    display: flex;
+    flex-direction: column;
+    span {
+      display: inline-block;
+      height: 4px;
+      width: 32px;
+      background-color: var(--btn-primary-text);
+      margin: 4px 0;
+      transition: all 0.3s ease-out;
+    }
   }
   .primaryNavBar .navItems {
     position: absolute;
@@ -47,16 +57,18 @@
     width: 0;
     height: 0px;
     transition: all 0.3s ease-in-out;
-    top: 203px;
+    top: 114px;
     right: 0;
     flex-direction: column;
     li {
       display: none;
     }
+    border: 1px solid var(--btn-primary-text);
+    padding: 12px;
   }
   .primaryNavBar .navItems.active {
     width: 400px;
-    height: calc(100vh - 80px);
+    height: calc(100vh - 138px);
     list-style-type: none;
     background-color: var(--background);
     li {
@@ -67,6 +79,17 @@
     .searchBarWrapper {
       margin: 15px;
       width: 100%;
+    }
+    + .hamburger {
+      span:first-child {
+        transform: rotate(45deg) translateY(10px);
+      }
+      span:nth-child(2) {
+        transform: rotate(-45deg) translateY(-9px);
+      }
+      span:last-child {
+        opacity: 0;
+      }
     }
   }
 }
