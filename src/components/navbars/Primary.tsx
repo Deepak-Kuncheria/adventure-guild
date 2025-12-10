@@ -14,32 +14,33 @@ const PrimaryNavBar = () => {
             <MainLogo width={100} height={100} />
           </div>
 
-          <div className="searchBarWrapper">
-            <PrimarySearchBar />
-          </div>
-
-          <div className="navLinks font-secondary text-highlight">
-            <a href="/about">About</a>
-            <a href="/books">Books</a>
-          </div>
+          <ul
+            className={`navItems${
+              isSidebarOpen ? " active" : " "
+            } font-secondary text-highlight`}
+          >
+            <div className="searchBarWrapper">
+              <PrimarySearchBar />
+            </div>
+            <li>
+              {" "}
+              <a href="/about">About</a>
+            </li>
+            <li>
+              {" "}
+              <a href="/books">Books</a>
+            </li>
+          </ul>
+          <button
+            className="hamburger"
+            aria-label="Toggle menu"
+            onClick={() => setSidebarOpen(!isSidebarOpen)}
+          >
+            {/* <HamburgerMenuIcon width={24} height={24} />
+             */}
+            Menu
+          </button>
         </nav>
-        <button
-          className="hamburger"
-          aria-label="Toggle menu"
-          onClick={() => setSidebarOpen(!isSidebarOpen)}
-        >
-          {/* <HamburgerMenuIcon width={24} height={24} />
-           */}
-          Menu
-        </button>
-        <aside
-          className={`mobileSidebar font-secondary text-accent-secondary ${
-            isSidebarOpen ? "open" : ""
-          }`}
-        >
-          <a href="/about">About</a>
-          <a href="/books">Books</a>
-        </aside>
       </header>
     </>
   );
