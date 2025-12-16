@@ -1,11 +1,13 @@
 .primaryHeader {
   padding: 16px;
-  position: relative;
+  position: sticky;
+  top: 0;
 }
 .primaryNavBar {
   display: flex;
   justify-content: space-between;
   align-items: center;
+  position: relative;
 }
 .primaryNavBar .hamburger {
   display: flex;
