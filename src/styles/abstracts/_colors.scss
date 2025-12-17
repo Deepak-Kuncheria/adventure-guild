@@ -1,0 +1,63 @@
+// for links
+.text-highlight {
+  text-decoration-color: var(--highlight);
+}
+
+// Text color utilities
+.text-foreground {
+  color: var(--foreground);
+}
+.text-primary {
+  color: var(--btn-primary-text);
+}
+.text-accent {
+  color: var(--accent-primary);
+}
+.text-accent-secondary {
+  color: var(--accent-secondary);
+}
+.text-highlight {
+  color: var(--highlight);
+}
+
+// Background color utilities
+.bg-background {
+  background-color: var(--background);
+}
+.bg-primary {
+  background-color: var(--btn-primary-text);
+}
+.bg-accent {
+  background-color: var(--accent-primary);
+}
+.bg-accent-secondary {
+  background-color: var(--accent-secondary);
+}
+.bg-highlight {
+  background-color: var(--highlight);
+}
+
+// Border color utilities
+.border-accent {
+  border: 1px solid var(--accent-primary);
+}
+.border-accent-secondary {
+  border: 1px solid var(--accent-secondary);
+}
+.border-highlight {
+  border: 1px solid var(--highlight);
+}
+
+// Button color presets
+.btn-primary {
+  background-color: var(--btn-primary-text);
+  color: var(--foreground);
+  padding: 0.5rem 1rem;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+
+  &:hover {
+    background-color: var(--accent-primary);
+  }
+}
