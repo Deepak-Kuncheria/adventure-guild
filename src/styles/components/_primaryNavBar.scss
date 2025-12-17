@@ -1,0 +1,107 @@
+.primaryHeader {
+  padding: 16px;
+  position: sticky;
+  top: 0;
+  background-color: var(--background);
+}
+.primaryNavBar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  position: relative;
+}
+.primaryNavBar .hamburger {
+  display: flex;
+  flex-direction: column;
+  span {
+    display: inline-block;
+    height: 4px;
+    width: 32px;
+    background-color: var(--btn-primary-text);
+    margin: 4px 0;
+    transition: all 0.3s ease-out;
+  }
+}
+.primaryNavBar .navItems {
+  display: flex;
+  align-items: center;
+  position: absolute;
+  width: 300px;
+  height: calc(100vh - 138px);
+  transition: all 0.3s ease-in-out;
+  top: 114px;
+  right: -100vw;
+  flex-direction: column;
+  list-style-type: none;
+  li {
+    display: block;
+    font-size: 20px;
+    margin: 15px;
+    a:hover {
+      color: var(--accent-secondary);
+    }
+  }
+  border: 1px solid var(--btn-primary-text);
+  padding: 12px;
+  .searchBarWrapper {
+    margin: 15px;
+    width: 100%;
+  }
+}
+.primaryNavBar .navItems.active {
+  right: 0;
+  list-style-type: none;
+  background-color: var(--background);
+
+  + .hamburger {
+    span:first-child {
+      transform: rotate(45deg) translateY(10px);
+    }
+    span:nth-child(2) {
+      transform: rotate(-45deg) translateY(-9px);
+    }
+    span:last-child {
+      opacity: 0;
+    }
+  }
+}
+@media screen and (min-width: 451px) {
+  .primaryNavBar .navItems {
+    width: 400px;
+  }
+}
+@media screen and (min-width: 769px) {
+  .primaryHeader {
+    padding: 45px 16px;
+  }
+
+  .primaryNavBar .navItems {
+    position: static;
+    width: 100%;
+    height: auto;
+    border: none;
+    padding: 0;
+    flex-direction: row;
+  }
+  .primaryNavBar .navItems.active {
+    right: auto;
+    background-color: transparent;
+  }
+  .primaryNavBar .navItems .searchBarWrapper {
+    width: 35%;
+    max-width: 400px;
+    margin: auto;
+  }
+  .primaryNavBar .navItems {
+    li {
+      display: block;
+      margin: 0 10px;
+      a {
+        font-size: 1.15rem;
+      }
+    }
+  }
+  .primaryNavBar .hamburger {
+    display: none;
+  }
+}
